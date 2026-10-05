@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP Integrado Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+  }
+  body { font-family: 'Inter', sans-serif; background: #f5f7fb; color: #1f2937; }
+  .sidebar { background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%); }
+  .sidebar-item { transition: all .2s; }
+  .sidebar-item.active { background: rgba(255,255,255,0.12); color: white; border-left: 3px solid #818cf8; }
+  .sidebar-item:hover:not(.active) { background: rgba(255,255,255,0.06); color: white; }
+  .card { background: white; border-radius: 14px; box-shadow: 0 1px 3px rgba(16,24,40,0.04), 0 1px 2px rgba(16,24,40,0.03); border: 1px solid #f1f5f9; }
+  .card-hover:hover { box-shadow: 0 10px 25px rgba(16,24,40,0.08); transform: translateY(-1px); transition: all .2s; }
+  .stat-card { position: relative; overflow: hidden; }
+  .stat-card::after { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background: currentColor; opacity: 0.05; }
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .modal { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index:50; align-items:center; justify-content:center; padding: 20px; }
+  .modal.show { display:flex; animation: fadeIn .2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  input, select, textarea { outline: none; }
+  input:focus, select:focus, textarea:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,0.12); }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+  ::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+  .table-pro thead th { background: #f8fafc; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+  .table-pro tbody td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+  .table-pro tbody tr:hover { background: #f8fafc; }
+  .btn-primary { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; transition: all .2s; box-shadow: 0 1px 2px rgba(79,70,229,0.2); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+  .btn-secondary { background: white; color: #374151; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; border: 1px solid #e5e7eb; transition: all .2s; }
+  .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; }
+  .form-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; background: white; }
+  .pdv-product { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; cursor: pointer; transition: all .15s; }
+  .pdv-product:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,70,229,0.12); }
+  .pdv-product:active { transform: translateY(0); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; background: #f1f5f9; color: #475569; }
+  .topbar { background: white; border-bottom: 1px solid #e5e7eb; }
+  .section-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+  .section-sub { font-size: 12px; color: #6b7280; margin-bottom: 16px; }
+  .divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
+  .nav-group-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); font-weight: 700; padding: 16px 20px 6px; }
+</style>
+</head>
+<body>
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 flex flex-col text-slate-300">
+    <div class="p-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
+          <i class="fas fa-cube"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">ERP Integrado</div>
+          <div class="text-[10px] text-indigo-300 uppercase tracking-wider">Professional</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-2">
+      <div class="nav-group-title">Principal</div>
+      <button class="sidebar-item active w-full flex items-center gap-3 px-5 py-2.5 text-sm text-slate-300" data-page="dashboard"><i class="fas fa-chart-pie w-5"></i>Dashboard</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="pdv"><i class="fas fa-cash-register w-5"></i>PDV</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="produtos"><i class="fas fa-box w-5"></i>Produtos</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="clientes"><i class="fas fa-users w-5"></i>Clientes</button>
+
+      <div class="nav-group-title">Vendas</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="orcamentos"><i class="fas fa-file-contract w-5"></i>Orçamentos</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="vendas"><i class="fas fa-shopping-cart w-5"></i>Pedidos</button>
+
+      <div class="nav-group-title">Financeiro</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="contas"><i class="fas fa-file-invoice-dollar w-5"></i>Contas Pagar/Receber</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="fluxo"><i class="fas fa-money-bill-wave w-5"></i>Fluxo de Caixa</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="nfe"><i class="fas fa-file-alt w-5"></i>NF-e / NFC-e</button>
+
+      <div class="nav-group-title">Integrações</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="marketplaces"><i class="fas fa-plug w-5"></i>Marketplaces</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="padronizacao"><i class="fas fa-sitemap w-5"></i>Padronização</button>
+
+      <div class="nav-group-title">Sistema</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="dados"><i class="fas fa-database w-5"></i>Backup / Dados</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-5 py-2.5 text-sm" data-page="config"><i class="fas fa-cog w-5"></i>Configurações</button>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">WM</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-semibold text-white truncate">Walney Moreira Klein</div>
+          <div class="text-[10px] text-indigo-300 truncate">walneyk@hotmail.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-y-auto">
+    <header class="topbar px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div>
+        <h1 id="pageTitle" class="text-xl font-bold text-gray-900">Dashboard</h1>
+        <p id="pageSubtitle" class="text-xs text-gray-500 mt-0.5">Visão geral do sistema</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <input type="text" placeholder="Buscar..." class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm w-64">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        </div>
+        <button class="w-9 h-9 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 relative">
+          <i class="fas fa-bell text-sm"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+        </button>
+        <div class="text-xs text-gray-500 hidden md:block" id="todayDate"></div>
+      </div>
+    </header>
+
+    <div id="content" class="p-8"></div>
+
+    <footer class="p-6 text-center text-xs text-gray-500 border-t bg-white">
+      © 2026 ERP Integrado Professional • Desenvolvido por <strong class="text-gray-700">Walney Moreira Klein</strong> • <a href="mailto:walneyk@hotmail.com" class="text-indigo-600 hover:underline">walneyk@hotmail.com</a>
+    </footer>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
+    <div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-white">
+      <h3 id="modalTitle" class="font-bold text-gray-900 text-base"></h3>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="modalBody" class="p-6 overflow-y-auto flex-1"></div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl hidden z-50 text-sm font-medium flex items-center gap-2"></div>
+
+<script>
+/* =========================
+   BANCO DE DADOS
+   ========================= */
+const DB_KEY = 'erp_mvp_db_v2';
+const defaultDB = {
+  config: {
+    empresa: { razaoSocial: 'Minha Empresa LTDA', cnpj: '00.000.000/0001-00', ie: 'ISENTO', endereco: '', serieNFe: 1, ultimoNFe: 0, serieNFCe: 1, ultimoNFCe: 0 },
+    ambiente: 'homologacao'
+  },
+  produtos: [],
+  clientes: [],
+  orcamentos: [],
+  vendas: [],
+  contas: [],
+  nfe: [],
+  marketplaces: [
+    { id: 'ml', nome: 'Mercado Livre', ativo: true, token: '', tipo: 'marketplace', comissao: 12, cor: '#FFE600', icone: 'shopping-bag', urlApi: 'https://api.mercadolibre.com', descricao: 'Maior marketplace da América Latina' },
+    { id: 'shopee', nome: 'Shopee', ativo: false, token: '', tipo: 'marketplace', comissao: 18, cor: '#EE4D2D', icone: 'shopping-basket', urlApi: 'https://partner.shopeemobile.com', descricao: 'Marketplace asiático em expansão' },
+    { id: 'amazon', nome: 'Amazon', ativo: false, token: '', tipo: 'marketplace', comissao: 15, cor: '#FF9900', icone: 'amazon', urlApi: 'https://sellingpartnerapi.amazon.com', descricao: 'Marketplace global' },
+    { id: 'magalu', nome: 'Magazine Luiza', ativo: false, token: '', tipo: 'marketplace', comissao: 14, cor: '#0086FF', icone: 'store', urlApi: 'https://api.magalu.com', descricao: 'Marketplace brasileiro' },
+    { id: 'loja_propria', nome: 'Loja Própria', ativo: true, token: '', tipo: 'proprio', comissao: 0, cor: '#10b981', icone: 'globe', urlApi: '', descricao: 'Canal próprio de vendas' }
+  ],
+  categorias: ['Eletrônicos','Vestuário','Casa','Alimentos','Beleza','Esportes','Outros'],
+  formasPagto: ['Dinheiro','PIX','Cartão Crédito','Cartão Débito','Boleto','Transferência'],
+  statusOrcamento: ['rascunho','enviado','aprovado','recusado','expirado'],
+  statusVenda: ['pendente','aprovado','faturado','enviado','entregue','cancelado']
+};
+
+function loadDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (!raw) { saveDB(defaultDB); return JSON.parse(JSON.stringify(defaultDB)); }
+  try { return JSON.parse(raw); } catch { return JSON.parse(JSON.stringify(defaultDB)); }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function fmtBRL(v) { return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
+function today() { return new Date().toISOString().slice(0,10); }
+
+function seedIfEmpty() {
+  const db = loadDB();
+  if (db.produtos.length === 0) {
+    const p1id = uid(), p2id = uid(), p3id = uid();
+    db.produtos = [
+      { id: p1id, sku: 'CEL-001', nome: 'Smartphone XYZ 128GB', categoria: 'Eletrônicos', preco: 1899.00, custo: 1400.00, estoque: 25, ncm: '85171301', unidade: 'UN', ean: '7890000000001', marketplaceSku: { ml: 'MLZ-123', shopee: 'SP-XYZ-001' }, tipo: 'simples', variacoes: [], imagem: '' },
+      { id: p2id, sku: 'CAM-BAS', nome: 'Camiseta Básica Algodão', categoria: 'Vestuário', preco: 59.90, custo: 22.00, estoque: 0, ncm: '61091000', unidade: 'UN', ean: '7890000000002', marketplaceSku: {}, tipo: 'variacao', variacoes: [
+        { id: uid(), sku: 'CAM-BAS-P-BR', cor: 'Branco', tamanho: 'P', estoque: 15, ean: '7890000000010', preco: 59.90 },
+        { id: uid(), sku: 'CAM-BAS-M-BR', cor: 'Branco', tamanho: 'M', estoque: 20, ean: '7890000000011', preco: 59.90 },
+        { id: uid(), sku: 'CAM-BAS-G-BR', cor: 'Branco', tamanho: 'G', estoque: 10, ean: '7890000000012', preco: 59.90 },
+        { id: uid(), sku: 'CAM-BAS-P-PT', cor: 'Preto', tamanho: 'P', estoque: 12, ean: '7890000000013', preco: 59.90 },
+        { id: uid(), sku: 'CAM-BAS-M-PT', cor: 'Preto', tamanho: 'M', estoque: 18, ean: '7890000000014', preco: 59.90 }
+      ], imagem: '' },
+      { id: p3id, sku: 'FON-BT', nome: 'Fone Bluetooth TWS', categoria: 'Eletrônicos', preco: 89.90, custo: 35.00, estoque: 50, ncm: '85183000', unidade: 'UN', ean: '7890000000003', marketplaceSku: {}, tipo: 'simples', variacoes: [], imagem: '' }
+    ];
+    db.clientes = [
+      { id: uid(), nome: 'Consumidor Final', tipo: 'F', cpfCnpj: '000.000.000-00', email: '', telefone: '', endereco: {} },
+      { id: uid(), nome: 'João da Silva', tipo: 'F', cpfCnpj: '123.456.789-00', email: 'joao@email.com', telefone: '(11) 98888-7777', endereco: { rua: 'Rua A', numero: '100', cidade: 'São Paulo', uf: 'SP', cep: '01000-000' } }
+    ];
+    db.vendas = [
+      { id: uid(), numero: '000001', data: today(), clienteId: db.clientes[1].id, origem: 'ml', itens: [{ produtoId: p1id, qtd: 1, preco: 1899 }], total: 1899, status: 'aprovado', formaPagto: 'Cartão Crédito' }
+    ];
+    saveDB(db);
+  }
+}
+seedIfEmpty();
+
+/* =========================
+   NAV
+   ========================= */
+const pages = {
+  dashboard: { title: 'Dashboard', subtitle: 'Visão geral do negócio', render: renderDashboard },
+  pdv: { title: 'PDV - Ponto de Venda', subtitle: 'Frente de caixa rápida', render: renderPDV },
+  produtos: { title: 'Produtos', subtitle: 'Cadastro com variações e integração marketplace', render: renderProdutos },
+  clientes: { title: 'Clientes', subtitle: 'Cadastro de clientes PF/PJ', render: renderClientes },
+  orcamentos: { title: 'Orçamentos', subtitle: 'Propostas comerciais que viram pedidos', render: renderOrcamentos },
+  vendas: { title: 'Pedidos / Vendas', subtitle: 'Pedidos de todos os canais unificados', render: renderVendas },
+  contas: { title: 'Contas a Pagar / Receber', subtitle: 'Gestão financeira', render: renderContas },
+  fluxo: { title: 'Fluxo de Caixa', subtitle: 'Entradas e saídas projetadas', render: renderFluxo },
+  nfe: { title: 'NF-e / NFC-e', subtitle: 'Emissão de documentos fiscais', render: renderNFe },
+  marketplaces: { title: 'Marketplaces', subtitle: 'Integrações configuráveis', render: renderMarketplaces },
+  padronizacao: { title: 'Padronização', subtitle: 'Modelo canônico de integração', render: renderPadronizacao },
+  dados: { title: 'Backup / Dados', subtitle: 'Importar e exportar JSON/CSV', render: renderDados },
+  config: { title: 'Configurações', subtitle: 'Dados da empresa e parâmetros', render: renderConfig }
+};
+
+document.querySelectorAll('.sidebar-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const page = btn.dataset.page;
+    document.getElementById('pageTitle').textContent = pages[page].title;
+    document.getElementById('pageSubtitle').textContent = pages[page].subtitle;
+    pages[page].render();
+  });
+});
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const icon = type==='error' ? 'fa-circle-xmark text-rose-400' : type==='warn' ? 'fa-triangle-exclamation text-amber-400' : 'fa-circle-check text-emerald-400';
+  t.innerHTML = `<i class="fas ${icon}"></i><span>${msg}</span>`;
+  t.className = 'fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl z-50 text-sm font-medium flex items-center gap-2 bg-gray-900 text-white';
+  setTimeout(()=>t.classList.add('hidden'), 2500);
+}
+function openModal(title, html, size='max-w-3xl') {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modal').querySelector('.max-w-3xl').className = `bg-white rounded-2xl shadow-2xl w-full ${size} max-h-[92vh] overflow-hidden flex flex-col`;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+/* =========================
+   DASHBOARD
+   ========================= */
+function renderDashboard() {
+  const db = loadDB();
+  const mesAtual = today().slice(0,7);
+  const vendasMes = db.vendas.filter(v => v.data.startsWith(mesAtual));
+  const totalVendasMes = vendasMes.reduce((s,v)=>s+v.total,0);
+  const estoqueTotal = db.produtos.reduce((s,p)=>s+produtoEstoqueTotal(p),0);
+  const valorEstoque = db.produtos.reduce((s,p)=>s+produtoEstoqueTotal(p)*(p.custo||0),0);
+  const aReceber = db.contas.filter(c=>c.tipo==='receber'&&c.status!=='pago').reduce((s,c)=>s+c.valor,0);
+  const aPagar = db.contas.filter(c=>c.tipo==='pagar'&&c.status!=='pago').reduce((s,c)=>s+c.valor,0);
+  const orcPend = db.orcamentos.filter(o=>o.status==='enviado'||o.status==='rascunho').length;
+
+  const porOrigem = {};
+  db.vendas.forEach(v => { porOrigem[v.origem] = (porOrigem[v.origem]||0) + v.total; });
+
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div class="card stat-card p-5 card-hover text-indigo-600">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vendas no Mês</div>
+            <div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(totalVendasMes)}</div>
+            <div class="text-xs text-gray-500 mt-1">${vendasMes.length} pedidos</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center"><i class="fas fa-chart-line text-indigo-600"></i></div>
+        </div>
+      </div>
+      <div class="card stat-card p-5 card-hover text-emerald-600">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Valor em Estoque</div>
+            <div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(valorEstoque)}</div>
+            <div class="text-xs text-gray-500 mt-1">${estoqueTotal} itens</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"><i class="fas fa-boxes-stacked text-emerald-600"></i></div>
+        </div>
+      </div>
+      <div class="card stat-card p-5 card-hover text-amber-600">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">A Receber</div>
+            <div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(aReceber)}</div>
+            <div class="text-xs text-gray-500 mt-1">${orcPend} orçamentos pendentes</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"><i class="fas fa-hand-holding-dollar text-amber-600"></i></div>
+        </div>
+      </div>
+      <div class="card stat-card p-5 card-hover text-rose-600">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">A Pagar</div>
+            <div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(aPagar)}</div>
+            <div class="text-xs text-gray-500 mt-1">Contas em aberto</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center"><i class="fas fa-file-invoice text-rose-600"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="card p-5 lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <div class="section-title">Vendas por Canal</div>
+            <div class="section-sub">Distribuição de receita por marketplace</div>
+          </div>
+        </div>
+        <canvas id="chartOrigem" height="140"></canvas>
+      </div>
+      <div class="card p-5">
+        <div class="section-title">Pedidos Recentes</div>
+        <div class="section-sub">Últimos 5 pedidos</div>
+        <div class="space-y-2">
+          ${db.vendas.slice(-5).reverse().map(v => {
+            const cli = db.clientes.find(c=>c.id===v.clienteId);
+            const mp = db.marketplaces.find(m=>m.id===v.origem);
+            return `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <div class="min-w-0 flex-1">
+                <div class="font-semibold text-sm text-gray-900 truncate">#${v.numero}</div>
+                <div class="text-xs text-gray-500 truncate">${cli?.nome||'-'} • ${mp?.nome||v.origem}</div>
+              </div>
+              <div class="text-right ml-2">
+                <div class="font-bold text-sm text-indigo-600">${fmtBRL(v.total)}</div>
+                <span class="badge bg-emerald-100 text-emerald-700">${v.status}</span>
+              </div>
+            </div>`;
+          }).join('') || '<div class="text-sm text-gray-400 text-center py-6">Nenhum pedido</div>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+      <div class="card p-5">
+        <div class="section-title">Produtos com Estoque Baixo</div>
+        <div class="section-sub">Itens que precisam de reposição</div>
+        <div class="space-y-2">
+          ${db.produtos.filter(p=>produtoEstoqueTotal(p)<10).slice(0,5).map(p => `
+            <div class="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-100">
+              <div>
+                <div class="font-semibold text-sm">${p.nome}</div>
+                <div class="text-xs text-gray-500 font-mono">${p.sku}</div>
+              </div>
+              <span class="badge bg-amber-100 text-amber-800">${produtoEstoqueTotal(p)} un</span>
+            </div>
+          `).join('') || '<div class="text-sm text-gray-400 text-center py-6">Tudo em ordem</div>'}
+        </div>
+      </div>
+      <div class="card p-5">
+        <div class="section-title">Acesso Rápido</div>
+        <div class="section-sub">Ações frequentes</div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="document.querySelector('[data-page=pdv]').click()" class="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl text-left hover:shadow-lg transition">
+            <i class="fas fa-cash-register text-xl mb-2"></i>
+            <div class="font-semibold text-sm">Abrir PDV</div>
+            <div class="text-xs opacity-80">Venda rápida</div>
+          </button>
+          <button onclick="document.querySelector('[data-page=orcamentos]').click()" class="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl text-left hover:shadow-lg transition">
+            <i class="fas fa-file-contract text-xl mb-2"></i>
+            <div class="font-semibold text-sm">Novo Orçamento</div>
+            <div class="text-xs opacity-80">Proposta comercial</div>
+          </button>
+          <button onclick="document.querySelector('[data-page=nfe]').click()" class="p-4 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl text-left hover:shadow-lg transition">
+            <i class="fas fa-file-alt text-xl mb-2"></i>
+            <div class="font-semibold text-sm">Emitir NF-e</div>
+            <div class="text-xs opacity-80">Documento fiscal</div>
+          </button>
+          <button onclick="document.querySelector('[data-page=marketplaces]').click()" class="p-4 bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-xl text-left hover:shadow-lg transition">
+            <i class="fas fa-plug text-xl mb-2"></i>
+            <div class="font-semibold text-sm">Marketplaces</div>
+            <div class="text-xs opacity-80">Integrações</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const labels = Object.keys(porOrigem).map(k => {
+    const mp = db.marketplaces.find(m=>m.id===k);
+    return mp?.nome || k;
+  });
+  const data = Object.values(porOrigem);
+  const colors = Object.keys(porOrigem).map(k => db.marketplaces.find(m=>m.id===k)?.cor || '#4f46e5');
+  if (data.length) {
+    new Chart(document.getElementById('chartOrigem'), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+      options: { plugins: { legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true } } }, cutout: '65%' }
+    });
+  }
+}
+
+function produtoEstoqueTotal(p) {
+  if (p.tipo === 'variacao' && p.variacoes?.length) {
+    return p.variacoes.reduce((s,v)=>s+(v.estoque||0),0);
+  }
+  return p.estoque||0;
+}
+
+/* =========================
+   PDV
+   ========================= */
+let pdvCart = [];
+function renderPDV() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="lg:col-span-2 space-y-4">
+        <div class="card p-4">
+          <div class="flex gap-2">
+            <div class="flex-1 relative">
+              <input id="pdvBusca" placeholder="Buscar por nome, SKU ou EAN..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm" autofocus>
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <select id="pdvCat" class="px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+              <option value="">Todas categorias</option>
+              ${db.categorias.map(c=>`<option>${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div id="pdvProdutos" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+      </div>
+      <div class="card flex flex-col h-[calc(100vh-180px)] sticky top-20">
+        <div class="p-4 border-b bg-gradient-to-r from-indigo-50 to-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-gray-900"><i class="fas fa-cart-shopping mr-1 text-indigo-600"></i> Carrinho</div>
+              <div class="text-xs text-gray-500" id="pdvItensCount">0 itens</div>
+            </div>
+            <button onclick="pdvClear()" class="text-xs text-rose-600 hover:underline"><i class="fas fa-trash mr-1"></i>Limpar</button>
+          </div>
+        </div>
+        <div id="pdvCart" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+        <div class="border-t p-4 bg-gray-50">
+          <div class="space-y-1 text-sm mb-3">
+            <div class="flex justify-between text-gray-600"><span>Subtotal</span><span id="pdvSub">R$ 0,00</span></div>
+            <div class="flex justify-between text-gray-600"><span>Desconto</span>
+              <input id="pdvDesc" type="number" step="0.01" value="0" class="w-24 px-2 py-1 border rounded text-right text-sm">
+            </div>
+            <div class="divider !my-2"></div>
+            <div class="flex justify-between font-bold text-lg text-gray-900"><span>TOTAL</span><span id="pdvTotal" class="text-indigo-600">R$ 0,00</span></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <select id="pdvCli" class="px-3 py-2 border rounded-lg text-sm">
+              ${db.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('')}
+            </select>
+            <select id="pdvPag" class="px-3 py-2 border rounded-lg text-sm">
+              ${db.formasPagto.map(f=>`<option>${f}</option>`).join('')}
+            </select>
+          </div>
+          <button onclick="pdvFinalizar()" class="w-full btn-primary py-3 text-base"><i class="fas fa-check-circle mr-1"></i>Finalizar Venda</button>
+        </div>
+      </div>
+    </div>
+  `;
+  renderPDVProdutos();
+  document.getElementById('pdvBusca').addEventListener('input', renderPDVProdutos);
+  document.getElementById('pdvCat').addEventListener('change', renderPDVProdutos);
+  document.getElementById('pdvDesc').addEventListener('input', pdvCalc);
+}
+
+function renderPDVProdutos() {
+  const db = loadDB();
+  const busca = (document.getElementById('pdvBusca')?.value||'').toLowerCase();
+  const cat = document.getElementById('pdvCat')?.value||'';
+  let produtos = [];
+  db.produtos.forEach(p => {
+    if (cat && p.categoria !== cat) return;
+    if (busca && !p.nome.toLowerCase().includes(busca) && !p.sku.toLowerCase().includes(busca) && !(p.ean||'').includes(busca)) return;
+    if (p.tipo === 'variacao' && p.variacoes?.length) {
+      p.variacoes.forEach(v => {
+        produtos.push({ produtoId: p.id, variacaoId: v.id, sku: v.sku, nome: `${p.nome} - ${v.cor||''} ${v.tamanho||''}`.trim(), preco: v.preco||p.preco, estoque: v.estoque||0, cor: v.cor, tamanho: v.tamanho });
+      });
+    } else {
+      produtos.push({ produtoId: p.id, variacaoId: null, sku: p.sku, nome: p.nome, preco: p.preco, estoque: p.estoque||0 });
+    }
+  });
+  const html = produtos.map(p => `
+    <div class="pdv-product ${p.estoque===0?'opacity-50':''}" onclick="${p.estoque>0?`pdvAdd('${p.produtoId}','${p.variacaoId||''}')`:''}">
+      <div class="flex justify-between items-start mb-2">
+        <span class="chip"><i class="fas fa-barcode text-[10px]"></i>${p.sku}</span>
+        ${p.estoque===0?'<span class="badge bg-rose-100 text-rose-700">Sem estoque</span>':`<span class="chip bg-emerald-50 text-emerald-700">${p.estoque} un</span>`}
+      </div>
+      <div class="font-semibold text-sm text-gray-900 mb-1 line-clamp-2 min-h-[40px]">${p.nome}</div>
+      ${p.cor||p.tamanho?`<div class="text-xs text-gray-500 mb-1">${p.cor||''} ${p.tamanho?'/ '+p.tamanho:''}</div>`:''}
+      <div class="text-lg font-bold text-indigo-600">${fmtBRL(p.preco)}</div>
+    </div>
+  `).join('') || '<div class="col-span-full text-center py-12 text-gray-400"><i class="fas fa-box-open text-4xl mb-2"></i><div>Nenhum produto encontrado</div></div>';
+  document.getElementById('pdvProdutos').innerHTML = html;
+}
+
+function pdvAdd(produtoId, variacaoId) {
+  const db = loadDB();
+  const p = db.produtos.find(x=>x.id===produtoId);
+  if (!p) return;
+  let preco, sku, nome, estoqueKey;
+  if (variacaoId && p.variacoes) {
+    const v = p.variacoes.find(x=>x.id===variacaoId);
+    preco = v.preco||p.preco; sku = v.sku; nome = `${p.nome} - ${v.cor||''} ${v.tamanho||''}`.trim();
+    estoqueKey = `v_${variacaoId}`;
+  } else {
+    preco = p.preco; sku = p.sku; nome = p.nome;
+    estoqueKey = `p_${produtoId}`;
+  }
+  const existing = pdvCart.find(i => i.estoqueKey === estoqueKey);
+  if (existing) existing.qtd++;
+  else pdvCart.push({ produtoId, variacaoId: variacaoId||null, sku, nome, preco, qtd: 1, estoqueKey });
+  renderPDVCart();
+}
+function pdvRemove(idx) { pdvCart.splice(idx,1); renderPDVCart(); }
+function pdvChangeQtd(idx, delta) {
+  pdvCart[idx].qtd = Math.max(1, pdvCart[idx].qtd + delta);
+  renderPDVCart();
+}
+function pdvClear() { pdvCart = []; renderPDVCart(); }
+function renderPDVCart() {
+  const el = document.getElementById('pdvCart');
+  if (!el) return;
+  if (!pdvCart.length) {
+    el.innerHTML = '<div class="text-center py-12 text-gray-400"><i class="fas fa-cart-shopping text-4xl mb-2"></i><div class="text-sm">Carrinho vazio</div></div>';
+  } else {
+    el.innerHTML = pdvCart.map((i,idx) => `
+      <div class="bg-white border border-gray-100 rounded-lg p-3">
+        <div class="flex justify-between items-start mb-1">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm text-gray-900 truncate">${i.nome}</div>
+            <div class="text-xs text-gray-500 font-mono">${i.sku}</div>
+          </div>
+          <button onclick="pdvRemove(${idx})" class="text-rose-500 hover:text-rose-700 ml-2"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+            <button onclick="pdvChangeQtd(${idx},-1)" class="w-7 h-7 rounded hover:bg-white flex items-center justify-center"><i class="fas fa-minus text-xs"></i></button>
+            <span class="w-8 text-center font-semibold text-sm">${i.qtd}</span>
+            <button onclick="pdvChangeQtd(${idx},1)" class="w-7 h-7 rounded hover:bg-white flex items-center justify-center"><i class="fas fa-plus text-xs"></i></button>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-gray-500">${fmtBRL(i.preco)} un</div>
+            <div class="font-bold text-indigo-600">${fmtBRL(i.preco*i.qtd)}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  pdvCalc();
+}
+function pdvCalc() {
+  const sub = pdvCart.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc = parseFloat(document.getElementById('pdvDesc')?.value)||0;
+  const total = Math.max(0, sub - desc);
+  const el1 = document.getElementById('pdvSub'); if (el1) el1.textContent = fmtBRL(sub);
+  const el2 = document.getElementById('pdvTotal'); if (el2) el2.textContent = fmtBRL(total);
+  const el3 = document.getElementById('pdvItensCount'); if (el3) el3.textContent = `${pdvCart.reduce((s,i)=>s+i.qtd,0)} itens`;
+}
+function pdvFinalizar() {
+  if (!pdvCart.length) { toast('Carrinho vazio','error'); return; }
+  const db = loadDB();
+  const sub = pdvCart.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc = parseFloat(document.getElementById('pdvDesc').value)||0;
+  const total = Math.max(0, sub - desc);
+  const numero = String((db.config.empresa.ultimoNFe||0)+1).padStart(6,'0');
+  const venda = {
+    id: uid(), numero, data: today(),
+    clienteId: document.getElementById('pdvCli').value,
+    origem: 'loja_propria',
+    formaPagto: document.getElementById('pdvPag').value,
+    itens: pdvCart.map(i => ({ produtoId: i.produtoId, variacaoId: i.variacaoId, qtd: i.qtd, preco: i.preco })),
+    total, desconto: desc, status: 'aprovado'
+  };
+  db.vendas.push(venda);
+  // baixa estoque
+  pdvCart.forEach(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    if (!p) return;
+    if (i.variacaoId && p.variacoes) {
+      const v = p.variacoes.find(x=>x.id===i.variacaoId);
+      if (v) v.estoque = Math.max(0, (v.estoque||0) - i.qtd);
+    } else {
+      p.estoque = Math.max(0, (p.estoque||0) - i.qtd);
+    }
+  });
+  db.contas.push({ id: uid(), tipo: 'receber', descricao: `Venda PDV #${numero}`, valor: total, vencimento: today(), status: 'pendente', vendaId: venda.id });
+  saveDB(db);
+  pdvCart = [];
+  toast(`Venda #${numero} finalizada - ${fmtBRL(total)}`);
+  renderPDV();
+}
+
+/* =========================
+   PRODUTOS
+   ========================= */
+function renderProdutos() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+      <div class="flex gap-2 flex-wrap">
+        <div class="relative">
+          <input id="buscaProd" placeholder="Buscar..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        </div>
+        <select id="fltCat" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <option value="">Todas categorias</option>
+          ${db.categorias.map(c=>`<option>${c}</option>`).join('')}
+        </select>
+        <select id="fltTipo" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <option value="">Todos tipos</option>
+          <option value="simples">Simples</option>
+          <option value="variacao">Com Variações</option>
+        </select>
+      </div>
+      <button onclick="formProduto()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Novo Produto</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead>
+          <tr><th>Produto</th><th>SKU</th><th>Categoria</th><th>Tipo</th><th class="text-right">Preço</th><th class="text-right">Custo</th><th class="text-right">Estoque</th><th>Marketplaces</th><th class="text-center">Ações</th></tr>
+        </thead>
+        <tbody id="tbProd"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const f = (document.getElementById('buscaProd').value||'').toLowerCase();
+    const cat = document.getElementById('fltCat').value;
+    const tipo = document.getElementById('fltTipo').value;
+    const lista = db.produtos.filter(p => {
+      if (f && !p.nome.toLowerCase().includes(f) && !p.sku.toLowerCase().includes(f) && !(p.ean||'').includes(f)) return false;
+      if (cat && p.categoria !== cat) return false;
+      if (tipo && p.tipo !== tipo) return false;
+      return true;
+    });
+    document.getElementById('tbProd').innerHTML = lista.map(p => {
+      const est = produtoEstoqueTotal(p);
+      const mpCount = Object.keys(p.marketplaceSku||{}).length;
+      const estColor = est===0?'text-rose-600 bg-rose-50':est<10?'text-amber-600 bg-amber-50':'text-emerald-600 bg-emerald-50';
+      return `<tr>
+        <td>
+          <div class="font-semibold text-gray-900">${p.nome}</div>
+          ${p.ean?`<div class="text-xs text-gray-500 font-mono">EAN: ${p.ean}</div>`:''}
+          ${p.tipo==='variacao'?`<div class="text-xs text-indigo-600 mt-1"><i class="fas fa-layer-group mr-1"></i>${p.variacoes.length} variações</div>`:''}
+        </td>
+        <td class="font-mono text-xs text-gray-700">${p.sku}</td>
+        <td><span class="chip">${p.categoria||'-'}</span></td>
+        <td><span class="badge ${p.tipo==='variacao'?'bg-purple-100 text-purple-700':'bg-gray-100 text-gray-700'}">${p.tipo==='variacao'?'Variações':'Simples'}</span></td>
+        <td class="text-right font-semibold">${fmtBRL(p.preco)}</td>
+        <td class="text-right text-gray-500">${fmtBRL(p.custo)}</td>
+        <td class="text-right"><span class="badge ${estColor}">${est} ${p.unidade||'UN'}</span></td>
+        <td>${mpCount>0?`<span class="chip bg-indigo-50 text-indigo-700"><i class="fas fa-plug text-[10px]"></i>${mpCount} integrados</span>`:'<span class="text-xs text-gray-400">-</span>'}</td>
+        <td class="text-center">
+          <button onclick="formProduto('${p.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2" title="Editar"><i class="fas fa-edit"></i></button>
+          <button onclick="delProduto('${p.id}')" class="text-rose-600 hover:text-rose-800" title="Excluir"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="9" class="text-center py-12 text-gray-400"><i class="fas fa-box-open text-3xl mb-2"></i><div>Nenhum produto</div></td></tr>';
+  };
+  render();
+  document.getElementById('buscaProd').addEventListener('input', render);
+  document.getElementById('fltCat').addEventListener('change', render);
+  document.getElementById('fltTipo').addEventListener('change', render);
+}
+
+function formProduto(id) {
+  const db = loadDB();
+  const p = id ? db.produtos.find(x=>x.id===id) : { sku:'', nome:'', categoria:'', preco:0, custo:0, estoque:0, ncm:'', unidade:'UN', ean:'', marketplaceSku:{}, tipo:'simples', variacoes:[] };
+  const cats = db.categorias.map(c=>`<option ${c===p.categoria?'selected':''}>${c}</option>`).join('');
+
+  const body = `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">SKU *</label><input id="f_sku" value="${p.sku}" class="form-input"></div>
+      <div><label class="form-label">EAN/GTIN</label><input id="f_ean" value="${p.ean||''}" class="form-input"></div>
+      <div class="col-span-2"><label class="form-label">Nome *</label><input id="f_nome" value="${p.nome}" class="form-input"></div>
+      <div><label class="form-label">Categoria</label><select id="f_cat" class="form-input">${cats}</select></div>
+      <div><label class="form-label">Unidade</label><select id="f_un" class="form-input"><option ${p.unidade==='UN'?'selected':''}>UN</option><option ${p.unidade==='KG'?'selected':''}>KG</option><option ${p.unidade==='LT'?'selected':''}>LT</option><option ${p.unidade==='MT'?'selected':''}>MT</option></select></div>
+      <div><label class="form-label">Preço Venda</label><input id="f_preco" type="number" step="0.01" value="${p.preco}" class="form-input"></div>
+      <div><label class="form-label">Custo</label><input id="f_custo" type="number" step="0.01" value="${p.custo}" class="form-input"></div>
+      <div><label class="form-label">NCM</label><input id="f_ncm" value="${p.ncm||''}" class="form-input"></div>
+      <div>
+        <label class="form-label">Tipo de Produto</label>
+        <select id="f_tipo" class="form-input" onchange="toggleVariacoes()">
+          <option value="simples" ${p.tipo==='simples'?'selected':''}>Simples (estoque único)</option>
+          <option value="variacao" ${p.tipo==='variacao'?'selected':''}>Com Variações (cor/tamanho)</option>
+        </select>
+      </div>
+      <div id="wrapEst" class="${p.tipo==='variacao'?'hidden':''}"><label class="form-label">Estoque</label><input id="f_est" type="number" value="${p.estoque||0}" class="form-input"></div>
+    </div>
+
+    <div id="variacoesArea" class="${p.tipo==='variacao'?'':'hidden'} mt-4">
+      <div class="flex justify-between items-center mb-2">
+        <label class="form-label !mb-0">Variações</label>
+        <button onclick="addVariacao()" class="text-sm text-indigo-600 font-semibold"><i class="fas fa-plus mr-1"></i>Adicionar variação</button>
+      </div>
+      <div id="varList" class="space-y-2"></div>
+    </div>
+
+    <div class="mt-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+      <div class="text-xs font-semibold text-indigo-700 mb-3"><i class="fas fa-plug mr-1"></i>SKUs nos Marketplaces</div>
+      <div id="mpsWrap" class="space-y-2"></div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarProduto('${id||''}')" class="btn-primary">Salvar Produto</button>
+    </div>
+  `;
+  openModal(id?'Editar Produto':'Novo Produto', body);
+  window._variacoes = JSON.parse(JSON.stringify(p.variacoes||[]));
+  renderVariacoes();
+  renderMPsSkus(p.marketplaceSku||{});
+}
+
+function toggleVariacoes() {
+  const tipo = document.getElementById('f_tipo').value;
+  document.getElementById('wrapEst').classList.toggle('hidden', tipo==='variacao');
+  document.getElementById('variacoesArea').classList.toggle('hidden', tipo!=='variacao');
+}
+function renderVariacoes() {
+  const el = document.getElementById('varList');
+  if (!el) return;
+  el.innerHTML = window._variacoes.map((v,i) => `
+    <div class="grid grid-cols-12 gap-2 p-3 bg-white rounded-lg border border-gray-200">
+      <input value="${v.sku||''}" onchange="window._variacoes[${i}].sku=this.value" placeholder="SKU" class="col-span-3 form-input !py-1.5 text-xs">
+      <input value="${v.cor||''}" onchange="window._variacoes[${i}].cor=this.value" placeholder="Cor" class="col-span-2 form-input !py-1.5 text-xs">
+      <input value="${v.tamanho||''}" onchange="window._variacoes[${i}].tamanho=this.value" placeholder="Tamanho" class="col-span-1 form-input !py-1.5 text-xs">
+      <input value="${v.ean||''}" onchange="window._variacoes[${i}].ean=this.value" placeholder="EAN" class="col-span-2 form-input !py-1.5 text-xs">
+      <input type="number" step="0.01" value="${v.preco||0}" onchange="window._variacoes[${i}].preco=parseFloat(this.value)" placeholder="Preço" class="col-span-2 form-input !py-1.5 text-xs">
+      <input type="number" value="${v.estoque||0}" onchange="window._variacoes[${i}].estoque=parseInt(this.value)" placeholder="Estoque" class="col-span-1 form-input !py-1.5 text-xs">
+      <button onclick="window._variacoes.splice(${i},1);renderVariacoes()" class="col-span-1 text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button>
+    </div>
+  `).join('') || '<div class="text-center py-6 text-gray-400 text-sm">Nenhuma variação cadastrada</div>';
+}
+function addVariacao() {
+  window._variacoes.push({ id: uid(), sku:'', cor:'', tamanho:'', ean:'', preco:0, estoque:0 });
+  renderVariacoes();
+}
+function renderMPsSkus(mps) {
+  const db = loadDB();
+  document.getElementById('mpsWrap').innerHTML = db.marketplaces.map(m => `
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded flex items-center justify-center text-white text-xs" style="background:${m.cor||'#6b7280'}"><i class="fas fa-${m.icone||'store'}"></i></div>
+      <label class="w-32 text-xs text-gray-600 font-medium">${m.nome}</label>
+      <input data-mp="${m.id}" value="${mps[m.id]||''}" class="flex-1 form-input !py-1.5 text-xs" placeholder="SKU no ${m.nome}">
+    </div>
+  `).join('');
+}
+
+function salvarProduto(id) {
+  const db = loadDB();
+  const sku = document.getElementById('f_sku').value.trim();
+  const nome = document.getElementById('f_nome').value.trim();
+  if (!sku || !nome) { toast('SKU e Nome obrigatórios','error'); return; }
+  const tipo = document.getElementById('f_tipo').value;
+  const mps = {};
+  document.querySelectorAll('[data-mp]').forEach(i => { if (i.value.trim()) mps[i.dataset.mp] = i.value.trim(); });
+  const obj = {
+    id: id || uid(), sku, nome,
+    categoria: document.getElementById('f_cat').value,
+    unidade: document.getElementById('f_un').value,
+    preco: parseFloat(document.getElementById('f_preco').value)||0,
+    custo: parseFloat(document.getElementById('f_custo').value)||0,
+    estoque: tipo==='simples' ? (parseInt(document.getElementById('f_est').value)||0) : 0,
+    ncm: document.getElementById('f_ncm').value.trim(),
+    ean: document.getElementById('f_ean').value.trim(),
+    marketplaceSku: mps,
+    tipo,
+    variacoes: tipo==='variacao' ? window._variacoes : []
+  };
+  if (id) { const i = db.produtos.findIndex(p=>p.id===id); db.produtos[i] = obj; }
+  else db.produtos.push(obj);
+  saveDB(db); closeModal(); renderProdutos(); toast('Produto salvo');
+}
+function delProduto(id) {
+  if (!confirm('Excluir produto?')) return;
+  const db = loadDB(); db.produtos = db.produtos.filter(p=>p.id!==id); saveDB(db); renderProdutos(); toast('Excluído');
+}
+
+/* =========================
+   CLIENTES
+   ========================= */
+function renderClientes() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="flex justify-between items-center mb-5">
+      <div class="relative">
+        <input id="buscaCli" placeholder="Buscar..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+      </div>
+      <button onclick="formCliente()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Novo Cliente</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead><tr><th>Cliente</th><th>Tipo</th><th>Documento</th><th>Contato</th><th>Cidade/UF</th><th class="text-center">Ações</th></tr></thead>
+        <tbody id="tbCli"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const f = (document.getElementById('buscaCli').value||'').toLowerCase();
+    const lista = db.clientes.filter(c => !f || c.nome.toLowerCase().includes(f) || (c.cpfCnpj||'').includes(f));
+    document.getElementById('tbCli').innerHTML = lista.map(c => `
+      <tr>
+        <td>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center font-semibold text-xs">${c.nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>
+            <div>
+              <div class="font-semibold text-gray-900">${c.nome}</div>
+              <div class="text-xs text-gray-500">${c.email||'-'}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge ${c.tipo==='J'?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-700'}">${c.tipo==='J'?'PJ':'PF'}</span></td>
+        <td class="font-mono text-xs">${c.cpfCnpj||'-'}</td>
+        <td class="text-gray-600 text-sm">${c.telefone||'-'}</td>
+        <td class="text-sm">${c.endereco?.cidade||'-'}/${c.endereco?.uf||'-'}</td>
+        <td class="text-center">
+          <button onclick="formCliente('${c.id}')" class="text-indigo-600 mr-2"><i class="fas fa-edit"></i></button>
+          <button onclick="delCliente('${c.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" class="text-center py-12 text-gray-400">Nenhum cliente</td></tr>';
+  };
+  render();
+  document.getElementById('buscaCli').addEventListener('input', render);
+}
+function formCliente(id) {
+  const db = loadDB();
+  const c = id ? db.clientes.find(x=>x.id===id) : { nome:'', tipo:'F', cpfCnpj:'', email:'', telefone:'', endereco:{} };
+  openModal(id?'Editar Cliente':'Novo Cliente', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Tipo</label><select id="f_tipo" class="form-input"><option value="F" ${c.tipo==='F'?'selected':''}>Pessoa Física</option><option value="J" ${c.tipo==='J'?'selected':''}>Pessoa Jurídica</option></select></div>
+      <div><label class="form-label">CPF/CNPJ</label><input id="f_doc" value="${c.cpfCnpj||''}" class="form-input"></div>
+      <div class="col-span-2"><label class="form-label">Nome / Razão Social *</label><input id="f_nome" value="${c.nome}" class="form-input"></div>
+      <div><label class="form-label">Email</label><input id="f_email" value="${c.email||''}" class="form-input"></div>
+      <div><label class="form-label">Telefone</label><input id="f_tel" value="${c.telefone||''}" class="form-input"></div>
+      <div><label class="form-label">CEP</label><input id="f_cep" value="${c.endereco?.cep||''}" class="form-input"></div>
+      <div><label class="form-label">UF</label><input id="f_uf" value="${c.endereco?.uf||''}" maxlength="2" class="form-input"></div>
+      <div class="col-span-2"><label class="form-label">Cidade</label><input id="f_cid" value="${c.endereco?.cidade||''}" class="form-input"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarCliente('${id||''}')" class="btn-primary">Salvar</button>
+    </div>
+  `);
+}
+function salvarCliente(id) {
+  const db = loadDB();
+  const nome = document.getElementById('f_nome').value.trim();
+  if (!nome) { toast('Nome obrigatório','error'); return; }
+  const obj = {
+    id: id||uid(), nome,
+    tipo: document.getElementById('f_tipo').value,
+    cpfCnpj: document.getElementById('f_doc').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    telefone: document.getElementById('f_tel').value.trim(),
+    endereco: { cep: document.getElementById('f_cep').value, uf: document.getElementById('f_uf').value, cidade: document.getElementById('f_cid').value }
+  };
+  if (id) { const i = db.clientes.findIndex(c=>c.id===id); db.clientes[i]=obj; } else db.clientes.push(obj);
+  saveDB(db); closeModal(); renderClientes(); toast('Cliente salvo');
+}
+function delCliente(id) { if (!confirm('Excluir?')) return; const db=loadDB(); db.clientes=db.clientes.filter(c=>c.id!==id); saveDB(db); renderClientes(); }
+
+/* =========================
+   ORÇAMENTOS
+   ========================= */
+function renderOrcamentos() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+      <div class="flex gap-2 flex-wrap">
+        <select id="fltStOrc" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <option value="">Todos status</option>
+          ${db.statusOrcamento.map(s=>`<option>${s}</option>`).join('')}
+        </select>
+      </div>
+      <button onclick="formOrcamento()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Novo Orçamento</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead><tr><th>Número</th><th>Data</th><th>Cliente</th><th>Validade</th><th class="text-right">Total</th><th>Status</th><th class="text-center">Ações</th></tr></thead>
+        <tbody id="tbOrc"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const st = document.getElementById('fltStOrc').value;
+    const lista = db.orcamentos.filter(o => !st || o.status===st);
+    const statusColor = { rascunho:'bg-gray-100 text-gray-700', enviado:'bg-blue-100 text-blue-700', aprovado:'bg-emerald-100 text-emerald-700', recusado:'bg-rose-100 text-rose-700', expirado:'bg-amber-100 text-amber-700' };
+    document.getElementById('tbOrc').innerHTML = lista.map(o => {
+      const cli = db.clientes.find(c=>c.id===o.clienteId);
+      return `<tr>
+        <td class="font-mono text-xs font-semibold">ORC-${o.numero}</td>
+        <td>${fmtDate(o.data)}</td>
+        <td>${cli?.nome||'-'}</td>
+        <td>${fmtDate(o.validade)}</td>
+        <td class="text-right font-bold text-indigo-600">${fmtBRL(o.total)}</td>
+        <td><span class="badge ${statusColor[o.status]||'bg-gray-100'}">${o.status}</span></td>
+        <td class="text-center whitespace-nowrap">
+          <button onclick="verOrcamento('${o.id}')" class="text-indigo-600 mr-1" title="Ver"><i class="fas fa-eye"></i></button>
+          ${(o.status==='rascunho'||o.status==='enviado')?`<button onclick="converterOrcVenda('${o.id}')" class="text-emerald-600 mr-1" title="Converter em pedido"><i class="fas fa-arrow-right-to-bracket"></i></button>`:''}
+          ${(o.status==='rascunho'||o.status==='enviado')?`<button onclick="mudarStatusOrc('${o.id}','enviado')" class="text-blue-600 mr-1" title="Marcar como enviado"><i class="fas fa-paper-plane"></i></button>`:''}
+          <button onclick="delOrcamento('${o.id}')" class="text-rose-600" title="Excluir"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="text-center py-12 text-gray-400">Nenhum orçamento</td></tr>';
+  };
+  render();
+  document.getElementById('fltStOrc').addEventListener('change', render);
+}
+
+function formOrcamento() {
+  const db = loadDB();
+  const optsCli = db.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  openModal('Novo Orçamento', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Data</label><input id="o_data" type="date" value="${today()}" class="form-input"></div>
+      <div><label class="form-label">Validade</label><input id="o_val" type="date" value="${new Date(Date.now()+7*86400000).toISOString().slice(0,10)}" class="form-input"></div>
+      <div class="col-span-2"><label class="form-label">Cliente</label><select id="o_cli" class="form-input">${optsCli}</select></div>
+      <div class="col-span-2"><label class="form-label">Observações</label><textarea id="o_obs" class="form-input" rows="2"></textarea></div>
+    </div>
+    <div class="mt-4">
+      <label class="form-label">Itens</label>
+      <div id="orcItens" class="space-y-2"></div>
+      <button onclick="addOrcItem()" class="mt-2 text-sm text-indigo-600 font-semibold"><i class="fas fa-plus mr-1"></i>Adicionar item</button>
+    </div>
+    <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl flex justify-between items-center">
+      <span class="font-semibold text-indigo-700">Total:</span>
+      <span id="o_total" class="text-xl font-bold text-indigo-700">R$ 0,00</span>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarOrcamento()" class="btn-primary">Salvar Orçamento</button>
+    </div>
+  `);
+  window._orcItens = [];
+  addOrcItem();
+}
+function addOrcItem() {
+  const db = loadDB();
+  const opts = db.produtos.map(p=>`<option value="${p.id}" data-preco="${p.preco}">${p.sku} - ${p.nome}</option>`).join('');
+  const idx = window._orcItens.length;
+  window._orcItens.push({ produtoId:'', qtd:1, preco:0 });
+  const wrap = document.getElementById('orcItens');
+  const div = document.createElement('div');
+  div.className = 'grid grid-cols-12 gap-2 items-center';
+  div.innerHTML = `
+    <select class="col-span-6 form-input !py-1.5 text-sm orc-prod">${opts}</select>
+    <input type="number" min="1" value="1" class="col-span-2 form-input !py-1.5 text-sm orc-qtd">
+    <input type="number" step="0.01" value="0" class="col-span-3 form-input !py-1.5 text-sm orc-preco">
+    <button onclick="remOrcItem(this)" class="col-span-1 text-rose-500"><i class="fas fa-trash"></i></button>
+  `;
+  wrap.appendChild(div);
+  div.querySelector('.orc-prod').addEventListener('change', e => {
+    const p = db.produtos.find(p=>p.id===e.target.value);
+    div.querySelector('.orc-preco').value = p?.preco||0;
+    calcOrcTotal();
+  });
+  div.querySelector('.orc-qtd').addEventListener('input', calcOrcTotal);
+  div.querySelector('.orc-preco').addEventListener('input', calcOrcTotal);
+}
+function remOrcItem(btn) { btn.parentElement.remove(); calcOrcTotal(); }
+function calcOrcTotal() {
+  let t = 0;
+  document.querySelectorAll('#orcItens > div').forEach(d => {
+    t += (parseFloat(d.querySelector('.orc-qtd').value)||0) * (parseFloat(d.querySelector('.orc-preco').value)||0);
+  });
+  document.getElementById('o_total').textContent = fmtBRL(t);
+}
+function salvarOrcamento() {
+  const db = loadDB();
+  const itens = [];
+  document.querySelectorAll('#orcItens > div').forEach(d => {
+    const pid = d.querySelector('.orc-prod').value;
+    const qtd = parseInt(d.querySelector('.orc-qtd').value)||0;
+    const preco = parseFloat(d.querySelector('.orc-preco').value)||0;
+    if (pid && qtd>0) itens.push({ produtoId: pid, qtd, preco });
+  });
+  if (!itens.length) { toast('Adicione ao menos um item','error'); return; }
+  const total = itens.reduce((s,i)=>s+i.qtd*i.preco,0);
+  const numero = String(db.orcamentos.length+1).padStart(5,'0');
+  db.orcamentos.push({
+    id: uid(), numero, data: document.getElementById('o_data').value,
+    validade: document.getElementById('o_val').value,
+    clienteId: document.getElementById('o_cli').value,
+    obs: document.getElementById('o_obs').value,
+    itens, total, status: 'rascunho'
+  });
+  saveDB(db); closeModal(); renderOrcamentos(); toast('Orçamento criado');
+}
+function verOrcamento(id) {
+  const db = loadDB();
+  const o = db.orcamentos.find(x=>x.id===id);
+  const cli = db.clientes.find(c=>c.id===o.clienteId);
+  const itens = o.itens.map(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    return `<tr class="border-t"><td class="p-2">${p?.sku||'-'}</td><td class="p-2">${p?.nome||'-'}</td><td class="p-2 text-right">${i.qtd}</td><td class="p-2 text-right">${fmtBRL(i.preco)}</td><td class="p-2 text-right font-semibold">${fmtBRL(i.qtd*i.preco)}</td></tr>`;
+  }).join('');
+  openModal(`Orçamento ORC-${o.numero}`, `
+    <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+      <div><strong>Cliente:</strong> ${cli?.nome||'-'}</div>
+      <div><strong>Data:</strong> ${fmtDate(o.data)}</div>
+      <div><strong>Validade:</strong> ${fmtDate(o.validade)}</div>
+      <div><strong>Status:</strong> <span class="badge bg-indigo-100 text-indigo-700">${o.status}</span></div>
+    </div>
+    ${o.obs?`<div class="p-3 bg-gray-50 rounded text-sm mb-3"><strong>Obs:</strong> ${o.obs}</div>`:''}
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50"><tr><th class="p-2 text-left">SKU</th><th class="p-2 text-left">Produto</th><th class="p-2 text-right">Qtd</th><th class="p-2 text-right">Preço</th><th class="p-2 text-right">Total</th></tr></thead>
+      <tbody>${itens}</tbody>
+      <tfoot><tr><td colspan="4" class="p-2 text-right font-bold">Total:</td><td class="p-2 text-right font-bold text-indigo-600">${fmtBRL(o.total)}</td></tr></tfoot>
+    </table>
+  `);
+}
+function mudarStatusOrc(id, status) {
+  const db = loadDB();
+  const o = db.orcamentos.find(x=>x.id===id);
+  o.status = status;
+  saveDB(db); renderOrcamentos(); toast('Status atualizado');
+}
+function converterOrcVenda(id) {
+  const db = loadDB();
+  const o = db.orcamentos.find(x=>x.id===id);
+  if (!confirm('Converter este orçamento em pedido?')) return;
+  const numero = String((db.config.empresa.ultimoNFe||0)+1).padStart(6,'0');
+  const venda = {
+    id: uid(), numero, data: today(),
+    clienteId: o.clienteId, origem: 'loja_propria',
+    formaPagto: 'A definir', itens: o.itens, total: o.total,
+    status: 'pendente', orcamentoId: o.id
+  };
+  db.vendas.push(venda);
+  o.status = 'aprovado';
+  db.contas.push({ id: uid(), tipo: 'receber', descricao: `Venda #${numero} (de orçamento ORC-${o.numero})`, valor: o.total, vencimento: today(), status: 'pendente', vendaId: venda.id });
+  saveDB(db); renderOrcamentos(); toast(`Pedido #${numero} criado`);
+}
+function delOrcamento(id) { if (!confirm('Excluir?')) return; const db=loadDB(); db.orcamentos=db.orcamentos.filter(o=>o.id!==id); saveDB(db); renderOrcamentos(); }
+
+/* =========================
+   VENDAS
+   ========================= */
+function renderVendas() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+      <div class="flex gap-2 flex-wrap">
+        <select id="fltOrigem" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <option value="">Todas origens</option>
+          ${db.marketplaces.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('')}
+        </select>
+        <select id="fltStatus" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <option value="">Todos status</option>
+          ${db.statusVenda.map(s=>`<option>${s}</option>`).join('')}
+        </select>
+      </div>
+      <button onclick="formVenda()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Nova Venda Manual</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead><tr><th>Pedido</th><th>Data</th><th>Cliente</th><th>Canal</th><th>Itens</th><th class="text-right">Total</th><th>Pagamento</th><th>Status</th><th class="text-center">Ações</th></tr></thead>
+        <tbody id="tbVendas"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const orig = document.getElementById('fltOrigem').value;
+    const st = document.getElementById('fltStatus').value;
+    const lista = db.vendas.filter(v => (!orig||v.origem===orig) && (!st||v.status===st));
+    const statusColor = { aprovado:'bg-emerald-100 text-emerald-700', faturado:'bg-blue-100 text-blue-700', enviado:'bg-indigo-100 text-indigo-700', entregue:'bg-gray-200 text-gray-700', pendente:'bg-amber-100 text-amber-700', cancelado:'bg-rose-100 text-rose-700' };
+    document.getElementById('tbVendas').innerHTML = lista.map(v => {
+      const cli = db.clientes.find(c=>c.id===v.clienteId);
+      const mp = db.marketplaces.find(m=>m.id===v.origem);
+      return `<tr>
+        <td>
+          <div class="font-mono text-xs font-semibold">#${v.numero}</div>
+          ${v.orcamentoId?'<div class="text-[10px] text-indigo-600">De orçamento</div>':''}
+        </td>
+        <td>${fmtDate(v.data)}</td>
+        <td>${cli?.nome||'-'}</td>
+        <td>
+          ${mp?`<div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded flex items-center justify-center text-white text-[10px]" style="background:${mp.cor||'#6b7280'}"><i class="fas fa-${mp.icone||'store'}"></i></div>
+            <span class="text-xs font-medium">${mp.nome}</span>
+          </div>`:'<span class="text-xs text-gray-400">-</span>'}
+        </td>
+        <td><span class="chip">${v.itens.length} ${v.itens.length===1?'item':'itens'}</span></td>
+        <td class="text-right font-bold text-indigo-600">${fmtBRL(v.total)}</td>
+        <td class="text-xs text-gray-600">${v.formaPagto||'-'}</td>
+        <td><span class="badge ${statusColor[v.status]||'bg-gray-100'}">${v.status}</span></td>
+        <td class="text-center whitespace-nowrap">
+          <button onclick="verVenda('${v.id}')" class="text-indigo-600 mr-1"><i class="fas fa-eye"></i></button>
+          <button onclick="delVenda('${v.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="9" class="text-center py-12 text-gray-400">Nenhuma venda</td></tr>';
+  };
+  render();
+  document.getElementById('fltOrigem').addEventListener('change', render);
+  document.getElementById('fltStatus').addEventListener('change', render);
+}
+
+function formVenda() {
+  const db = loadDB();
+  const optsCli = db.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const optsMp = db.marketplaces.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');
+  const optsPag = db.formasPagto.map(f=>`<option>${f}</option>`).join('');
+
+  openModal('Nova Venda Manual', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Data</label><input id="v_data" type="date" value="${today()}" class="form-input"></div>
+      <div><label class="form-label">Canal / Origem</label><select id="v_orig" class="form-input">${optsMp}</select></div>
+      <div><label class="form-label">Cliente</label><select id="v_cli" class="form-input">${optsCli}</select></div>
+      <div><label class="form-label">Forma Pagamento</label><select id="v_pag" class="form-input">${optsPag}</select></div>
+    </div>
+    <div class="mt-4">
+      <label class="form-label">Itens</label>
+      <div id="itensWrap" class="space-y-2"></div>
+      <button onclick="addItem()" class="mt-2 text-sm text-indigo-600 font-semibold"><i class="fas fa-plus mr-1"></i>Adicionar item</button>
+    </div>
+    <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl flex justify-between items-center">
+      <span class="font-semibold text-indigo-700">Total:</span>
+      <span id="v_total" class="text-xl font-bold text-indigo-700">R$ 0,00</span>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarVenda()" class="btn-primary">Salvar</button>
+    </div>
+  `);
+  window._itens = [];
+  addItem();
+}
+
+function addItem() {
+  const db = loadDB();
+  let opts = '';
+  db.produtos.forEach(p => {
+    if (p.tipo === 'variacao' && p.variacoes?.length) {
+      p.variacoes.forEach(v => {
+        opts += `<option value="${p.id}|${v.id}" data-preco="${v.preco||p.preco}">${p.sku}/${v.sku} - ${p.nome} (${v.cor||''} ${v.tamanho||''})</option>`;
+      });
+    } else {
+      opts += `<option value="${p.id}|" data-preco="${p.preco}">${p.sku} - ${p.nome}</option>`;
+    }
+  });
+  const div = document.createElement('div');
+  div.className = 'grid grid-cols-12 gap-2 items-center';
+  div.innerHTML = `
+    <select class="col-span-6 form-input !py-1.5 text-sm prod-sel">${opts}</select>
+    <input type="number" min="1" value="1" class="col-span-2 form-input !py-1.5 text-sm qtd-sel">
+    <input type="number" step="0.01" value="0" class="col-span-3 form-input !py-1.5 text-sm preco-sel">
+    <button onclick="remItem(this)" class="col-span-1 text-rose-500"><i class="fas fa-trash"></i></button>
+  `;
+  document.getElementById('itensWrap').appendChild(div);
+  div.querySelector('.prod-sel').addEventListener('change', e => {
+    const opt = e.target.selectedOptions[0];
+    div.querySelector('.preco-sel').value = opt.dataset.preco;
+    calcTotal();
+  });
+  div.querySelector('.qtd-sel').addEventListener('input', calcTotal);
+  div.querySelector('.preco-sel').addEventListener('input', calcTotal);
+  const opt = div.querySelector('.prod-sel').selectedOptions[0];
+  if (opt) div.querySelector('.preco-sel').value = opt.dataset.preco;
+  calcTotal();
+}
+function remItem(btn) { btn.parentElement.remove(); calcTotal(); }
+function calcTotal() {
+  let t = 0;
+  document.querySelectorAll('#itensWrap > div').forEach(d => {
+    t += (parseFloat(d.querySelector('.qtd-sel').value)||0) * (parseFloat(d.querySelector('.preco-sel').value)||0);
+  });
+  const el = document.getElementById('v_total'); if (el) el.textContent = fmtBRL(t);
+}
+
+function salvarVenda() {
+  const db = loadDB();
+  const itens = [];
+  document.querySelectorAll('#itensWrap > div').forEach(d => {
+    const val = d.querySelector('.prod-sel').value.split('|');
+    const produtoId = val[0]; const variacaoId = val[1]||null;
+    const qtd = parseInt(d.querySelector('.qtd-sel').value)||0;
+    const preco = parseFloat(d.querySelector('.preco-sel').value)||0;
+    if (produtoId && qtd>0) itens.push({ produtoId, variacaoId, qtd, preco });
+  });
+  if (!itens.length) { toast('Adicione ao menos um item','error'); return; }
+  const total = itens.reduce((s,i)=>s+i.qtd*i.preco,0);
+  const numero = String((db.config.empresa.ultimoNFe||0)+1).padStart(6,'0');
+  const venda = {
+    id: uid(), numero, data: document.getElementById('v_data').value,
+    clienteId: document.getElementById('v_cli').value,
+    origem: document.getElementById('v_orig').value,
+    formaPagto: document.getElementById('v_pag').value,
+    itens, total, status: 'aprovado'
+  };
+  db.vendas.push(venda);
+  itens.forEach(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    if (!p) return;
+    if (i.variacaoId && p.variacoes) {
+      const v = p.variacoes.find(x=>x.id===i.variacaoId);
+      if (v) v.estoque = Math.max(0, (v.estoque||0) - i.qtd);
+    } else {
+      p.estoque = Math.max(0, (p.estoque||0) - i.qtd);
+    }
+  });
+  db.contas.push({ id: uid(), tipo: 'receber', descricao: `Venda #${numero}`, valor: total, vencimento: venda.data, status: 'pendente', vendaId: venda.id });
+  saveDB(db); closeModal(); renderVendas(); toast('Venda registrada');
+}
+
+function verVenda(id) {
+  const db = loadDB();
+  const v = db.vendas.find(x=>x.id===id);
+  const cli = db.clientes.find(c=>c.id===v.clienteId);
+  const mp = db.marketplaces.find(m=>m.id===v.origem);
+  const itens = v.itens.map(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    let nome = p?.nome||'-';
+    if (i.variacaoId && p?.variacoes) {
+      const vv = p.variacoes.find(x=>x.id===i.variacaoId);
+      if (vv) nome += ` (${vv.cor||''} ${vv.tamanho||''})`.trim();
+    }
+    return `<tr class="border-t"><td class="p-2 font-mono text-xs">${p?.sku||'-'}</td><td class="p-2">${nome}</td><td class="p-2 text-right">${i.qtd}</td><td class="p-2 text-right">${fmtBRL(i.preco)}</td><td class="p-2 text-right font-semibold">${fmtBRL(i.qtd*i.preco)}</td></tr>`;
+  }).join('');
+  openModal(`Pedido #${v.numero}`, `
+    <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+      <div><strong>Cliente:</strong> ${cli?.nome||'-'}</div>
+      <div><strong>Canal:</strong> ${mp?.nome||v.origem}</div>
+      <div><strong>Data:</strong> ${fmtDate(v.data)}</div>
+      <div><strong>Pagamento:</strong> ${v.formaPagto}</div>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50"><tr><th class="p-2 text-left">SKU</th><th class="p-2 text-left">Produto</th><th class="p-2 text-right">Qtd</th><th class="p-2 text-right">Preço</th><th class="p-2 text-right">Total</th></tr></thead>
+      <tbody>${itens}</tbody>
+      <tfoot><tr><td colspan="4" class="p-2 text-right font-bold">Total:</td><td class="p-2 text-right font-bold text-indigo-600">${fmtBRL(v.total)}</td></tr></tfoot>
+    </table>
+  `);
+}
+function delVenda(id) { if (!confirm('Excluir venda?')) return; const db=loadDB(); db.vendas=db.vendas.filter(v=>v.id!==id); saveDB(db); renderVendas(); }
+
+/* =========================
+   CONTAS
+   ========================= */
+function renderContas() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="flex gap-2 mb-5 border-b">
+      <button class="tab-btn active px-4 py-2 border-b-2 border-transparent text-sm font-semibold text-gray-600" data-tab="receber"><i class="fas fa-arrow-down mr-1 text-emerald-600"></i>A Receber</button>
+      <button class="tab-btn px-4 py-2 border-b-2 border-transparent text-sm font-semibold text-gray-600" data-tab="pagar"><i class="fas fa-arrow-up mr-1 text-rose-600"></i>A Pagar</button>
+      <div class="flex-1"></div>
+      <button onclick="formConta()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Nova Conta</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead><tr><th>Descrição</th><th>Categoria</th><th>Vencimento</th><th class="text-right">Valor</th><th>Status</th><th class="text-center">Ações</th></tr></thead>
+        <tbody id="tbContas"></tbody>
+      </table>
+    </div>
+  `;
+  let tab = 'receber';
+  const render = () => {
+    const lista = db.contas.filter(c => c.tipo===tab).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+    document.getElementById('tbContas').innerHTML = lista.map(c => {
+      const vencida = c.status!=='pago' && c.vencimento < today();
+      return `<tr class="${vencida?'bg-rose-50':''}">
+        <td>
+          <div class="font-semibold text-gray-900">${c.descricao}</div>
+          ${c.vendaId?`<div class="text-xs text-gray-500">Vínculo: venda #${db.vendas.find(v=>v.id===c.vendaId)?.numero||'-'}</div>`:''}
+        </td>
+        <td><span class="chip">${c.categoria||'-'}</span></td>
+        <td>${fmtDate(c.vencimento)}</td>
+        <td class="text-right font-bold">${fmtBRL(c.valor)}</td>
+        <td><span class="badge ${c.status==='pago'?'bg-emerald-100 text-emerald-700':vencida?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${c.status==='pago'?'Pago':vencida?'Vencida':'Pendente'}</span></td>
+        <td class="text-center">
+          ${c.status!=='pago'?`<button onclick="pagarConta('${c.id}')" class="text-emerald-600 mr-2" title="Baixar"><i class="fas fa-check-circle"></i></button>`:''}
+          <button onclick="delConta('${c.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="text-center py-12 text-gray-400">Nenhuma conta</td></tr>';
+  };
+  render();
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(x=>{x.classList.remove('active'); x.classList.remove('border-indigo-600','text-indigo-600');});
+    b.classList.add('active','border-indigo-600','text-indigo-600'); tab = b.dataset.tab; render();
+  }));
+  document.querySelector('.tab-btn.active').classList.add('border-indigo-600','text-indigo-600');
+}
+function formConta() {
+  openModal('Nova Conta', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Tipo</label><select id="c_tipo" class="form-input"><option value="receber">A Receber</option><option value="pagar">A Pagar</option></select></div>
+      <div><label class="form-label">Vencimento</label><input id="c_venc" type="date" value="${today()}" class="form-input"></div>
+      <div class="col-span-2"><label class="form-label">Descrição</label><input id="c_desc" class="form-input"></div>
+      <div><label class="form-label">Valor</label><input id="c_val" type="number" step="0.01" class="form-input"></div>
+      <div><label class="form-label">Categoria</label><input id="c_cat" class="form-input" placeholder="Ex: Fornecedores"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarConta()" class="btn-primary">Salvar</button>
+    </div>
+  `);
+}
+function salvarConta() {
+  const db = loadDB();
+  const desc = document.getElementById('c_desc').value.trim();
+  const val = parseFloat(document.getElementById('c_val').value)||0;
+  if (!desc || val<=0) { toast('Preencha descrição e valor','error'); return; }
+  db.contas.push({
+    id: uid(), tipo: document.getElementById('c_tipo').value,
+    descricao: desc, valor: val,
+    vencimento: document.getElementById('c_venc').value,
+    categoria: document.getElementById('c_cat').value,
+    status: 'pendente'
+  });
+  saveDB(db); closeModal(); renderContas(); toast('Conta criada');
+}
+function pagarConta(id) {
+  const db = loadDB();
+  const c = db.contas.find(x=>x.id===id);
+  c.status = 'pago'; c.dataPagto = today();
+  saveDB(db); renderContas(); toast('Baixada');
+}
+function delConta(id) { if (!confirm('Excluir?')) return; const db=loadDB(); db.contas=db.contas.filter(c=>c.id!==id); saveDB(db); renderContas(); }
+
+/* =========================
+   FLUXO DE CAIXA
+   ========================= */
+function renderFluxo() {
+  const db = loadDB();
+  const hoje = new Date();
+  const labels = [], entradas = [], saidas = [], saldos = [];
+  let saldo = 0;
+  for (let i=29; i>=0; i--) {
+    const d = new Date(hoje); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+    const ent = db.contas.filter(c=>c.tipo==='receber'&&c.vencimento===ds).reduce((s,c)=>s+c.valor,0);
+    const sai = db.contas.filter(c=>c.tipo==='pagar'&&c.vencimento===ds).reduce((s,c)=>s+c.valor,0);
+    entradas.push(ent); saidas.push(sai);
+    saldo += ent - sai; saldos.push(saldo);
+  }
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+      <div class="card stat-card p-5 text-emerald-600"><div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Entradas (30d)</div><div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(entradas.reduce((a,b)=>a+b,0))}</div></div>
+      <div class="card stat-card p-5 text-rose-600"><div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Saídas (30d)</div><div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(saidas.reduce((a,b)=>a+b,0))}</div></div>
+      <div class="card stat-card p-5 text-indigo-600"><div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Saldo Projetado</div><div class="text-2xl font-bold text-gray-900 mt-2">${fmtBRL(saldo)}</div></div>
+    </div>
+    <div class="card p-5">
+      <div class="section-title">Fluxo de Caixa - Últimos 30 dias</div>
+      <div class="section-sub">Evolução diária de entradas, saídas e saldo acumulado</div>
+      <canvas id="chartFluxo" height="90"></canvas>
+    </div>
+  `;
+  new Chart(document.getElementById('chartFluxo'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Entradas', data: entradas, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: true },
+      { label: 'Saídas', data: saidas, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', tension: 0.3, fill: true },
+      { label: 'Saldo Acum.', data: saldos, borderColor: '#4f46e5', tension: 0.3, borderDash: [5,5] }
+    ]},
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+/* =========================
+   NF-E
+   ========================= */
+function renderNFe() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-900 flex gap-3">
+      <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
+      <div><strong>MVP:</strong> A emissão real de NF-e/NFC-e requer certificado digital A1/A3, credenciamento na SEFAZ e uso de biblioteca autorizada. Aqui simulamos o documento fiscal com numeração controlada.</div>
+    </div>
+    <div class="flex justify-between items-center mb-5">
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-600">Ambiente:</span>
+        <span class="badge ${db.config.ambiente==='producao'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}"><i class="fas fa-circle text-[8px]"></i>${db.config.ambiente}</span>
+      </div>
+      <button onclick="emitirNFe()" class="btn-primary"><i class="fas fa-file-signature mr-1"></i>Emitir NF-e a partir de venda</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full table-pro">
+        <thead><tr><th>Número</th><th>Tipo</th><th>Data</th><th>Destinatário</th><th class="text-right">Valor</th><th>Chave</th><th>Status</th><th class="text-center">Ações</th></tr></thead>
+        <tbody id="tbNfe"></tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('tbNfe').innerHTML = db.nfe.map(n => {
+    const cli = db.clientes.find(c=>c.id===n.clienteId);
+    return `<tr>
+      <td class="font-mono text-xs font-semibold">${n.numero}</td>
+      <td><span class="badge ${n.tipo==='NF-e'?'bg-indigo-100 text-indigo-700':'bg-purple-100 text-purple-700'}">${n.tipo}</span></td>
+      <td>${fmtDate(n.data)}</td>
+      <td>${cli?.nome||'-'}</td>
+      <td class="text-right font-bold">${fmtBRL(n.valor)}</td>
+      <td class="font-mono text-[10px] text-gray-500">${(n.chave||'').slice(0,20)}...</td>
+      <td><span class="badge bg-emerald-100 text-emerald-700">${n.status}</span></td>
+      <td class="text-center"><button onclick="verNFe('${n.id}')" class="text-indigo-600"><i class="fas fa-eye"></i></button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="text-center py-12 text-gray-400">Nenhuma NF-e emitida</td></tr>';
+}
+
+function emitirNFe() {
+  const db = loadDB();
+  const pendentes = db.vendas.filter(v => !db.nfe.find(n=>n.vendaId===v.id));
+  if (!pendentes.length) { toast('Todas vendas já possuem NF-e','warn'); return; }
+  const opts = pendentes.map(v => {
+    const cli = db.clientes.find(c=>c.id===v.clienteId);
+    return `<option value="${v.id}">#${v.numero} - ${cli?.nome} - ${fmtBRL(v.total)}</option>`;
+  }).join('');
+  openModal('Emitir NF-e / NFC-e', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Tipo</label><select id="n_tipo" class="form-input"><option>NF-e</option><option>NFC-e</option></select></div>
+      <div><label class="form-label">Venda</label><select id="n_venda" class="form-input">${opts}</select></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="confirmarNFe()" class="btn-primary">Emitir</button>
+    </div>
+  `);
+}
+function confirmarNFe() {
+  const db = loadDB();
+  const tipo = document.getElementById('n_tipo').value;
+  const vendaId = document.getElementById('n_venda').value;
+  const v = db.vendas.find(x=>x.id===vendaId);
+  const key = tipo==='NF-e' ? 'ultimoNFe' : 'ultimoNFCe';
+  const serieKey = tipo==='NF-e' ? 'serieNFe' : 'serieNFCe';
+  db.config.empresa[key] = (db.config.empresa[key]||0)+1;
+  const numero = `${String(db.config.empresa[serieKey]).padStart(3,'0')}${String(db.config.empresa[key]).padStart(9,'0')}`;
+  db.nfe.push({
+    id: uid(), numero, tipo, data: today(),
+    vendaId: v.id, clienteId: v.clienteId, valor: v.total,
+    status: 'autorizada', chave: 'SIMULADA-' + uid().toUpperCase()
+  });
+  saveDB(db); closeModal(); renderNFe(); toast(`${tipo} ${numero} emitida`);
+}
+function verNFe(id) {
+  const db = loadDB();
+  const n = db.nfe.find(x=>x.id===id);
+  const cli = db.clientes.find(c=>c.id===n.clienteId);
+  openModal(`${n.tipo} ${n.numero}`, `
+    <div class="text-sm space-y-2">
+      <div class="grid grid-cols-2 gap-3">
+        <div><strong>Emitente:</strong> ${db.config.empresa.razaoSocial}</div>
+        <div><strong>CNPJ:</strong> ${db.config.empresa.cnpj}</div>
+        <div><strong>Destinatário:</strong> ${cli?.nome||'-'}</div>
+        <div><strong>Doc:</strong> ${cli?.cpfCnpj||'-'}</div>
+        <div><strong>Data:</strong> ${fmtDate(n.data)}</div>
+        <div><strong>Valor:</strong> ${fmtBRL(n.valor)}</div>
+      </div>
+      <div class="divider"></div>
+      <div><strong>Chave:</strong> <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">${n.chave}</span></div>
+      <div><strong>Status:</strong> <span class="badge bg-emerald-100 text-emerald-700">${n.status}</span></div>
+    </div>
+  `);
+}
+
+/* =========================
+   MARKETPLACES (com criação)
+   ========================= */
+function renderMarketplaces() {
+  const db = loadDB();
+  document.getElementById('content').innerHTML = `
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-5 text-sm text-blue-900 flex gap-3">
+      <i class="fas fa-lightbulb text-blue-600 mt-0.5"></i>
+      <div><strong>Como funciona:</strong> Cada marketplace expõe uma API REST (OAuth2). O ERP realiza sincronização de produtos via SKU/EAN, push de estoque, pull de pedidos via webhook, push de status e conciliação financeira. Você pode cadastrar quantos marketplaces desejar.</div>
+    </div>
+    <div class="flex justify-end mb-4">
+      <button onclick="formMarketplace()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Novo Marketplace</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      ${db.marketplaces.map(m => `
+        <div class="card p-5 card-hover">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-md" style="background:${m.cor||'#6b7280'}">
+                <i class="fas fa-${m.icone||'store'} text-lg"></i>
+              </div>
+              <div>
+                <div class="font-bold text-gray-900">${m.nome}</div>
+                <div class="text-xs text-gray-500">${m.tipo}</div>
+              </div>
+            </div>
+            <span class="badge ${m.ativo?'bg-emerald-100 text-emerald-700':'bg-gray-100 text-gray-600'}">${m.ativo?'Ativo':'Inativo'}</span>
+          </div>
+          <div class="text-xs text-gray-600 mb-3 min-h-[32px]">${m.descricao||''}</div>
+          <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+            <div class="bg-gray-50 p-2 rounded"><span class="text-gray-500">Comissão</span><div class="font-bold text-gray-900">${m.comissao}%</div></div>
+            <div class="bg-gray-50 p-2 rounded"><span class="text-gray-500">API</span><div class="font-mono text-[10px] truncate" title="${m.urlApi||''}">${m.urlApi||'-'}</div></div>
+          </div>
+          <div class="mb-3">
+            <label class="text-xs text-gray-500 font-semibold">Token/API Key</label>
+            <input data-mp="${m.id}" value="${m.token||''}" placeholder="Cole aqui seu token" class="form-input !py-1.5 text-xs mt-1">
+          </div>
+          <div class="flex gap-2">
+            <button onclick="toggleMp('${m.id}')" class="flex-1 btn-secondary !py-1.5 text-xs">${m.ativo?'Desativar':'Ativar'}</button>
+            <button onclick="salvarTokenMp('${m.id}')" class="flex-1 btn-primary !py-1.5 text-xs">Salvar</button>
+            <button onclick="formMarketplace('${m.id}')" class="w-8 h-8 btn-secondary !p-0 flex items-center justify-center"><i class="fas fa-edit text-xs"></i></button>
+            <button onclick="delMp('${m.id}')" class="w-8 h-8 btn-secondary !p-0 flex items-center justify-center text-rose-600"><i class="fas fa-trash text-xs"></i></button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function formMarketplace(id) {
+  const db = loadDB();
+  const m = id ? db.marketplaces.find(x=>x.id===id) : { nome:'', tipo:'marketplace', comissao:0, cor:'#6b7280', icone:'store', urlApi:'', descricao:'', token:'', ativo:false };
+  openModal(id?'Editar Marketplace':'Novo Marketplace', `
+    <div class="grid grid-cols-2 gap-3">
+      <div class="col-span-2"><label class="form-label">Nome *</label><input id="m_nome" value="${m.nome}" class="form-input"></div>
+      <div><label class="form-label">Tipo</label><select id="m_tipo" class="form-input">
+        <option value="marketplace" ${m.tipo==='marketplace'?'selected':''}>Marketplace</option>
+        <option value="proprio" ${m.tipo==='proprio'?'selected':''}>Canal Próprio</option>
+        <option value="erp_integrador" ${m.tipo==='erp_integrador'?'selected':''}>Integrador (Anymarket, Bling, etc)</option>
+      </select></div>
+      <div><label class="form-label">Comissão (%)</label><input id="m_com" type="number" step="0.01" value="${m.comissao}" class="form-input"></div>
+      <div><label class="form-label">Cor (hex)</label><input id="m_cor" value="${m.cor}" class="form-input"><div class="h-6 rounded mt-1 border" style="background:${m.cor}"></div></div>
+      <div><label class="form-label">Ícone (FontAwesome)</label><input id="m_icone" value="${m.icone}" class="form-input" placeholder="store, shopping-bag, amazon..."></div>
+      <div class="col-span-2"><label class="form-label">URL da API</label><input id="m_url" value="${m.urlApi||''}" class="form-input" placeholder="https://api..."></div>
+      <div class="col-span-2"><label class="form-label">Descrição</label><textarea id="m_desc" class="form-input" rows="2">${m.descricao||''}</textarea></div>
+      <div class="col-span-2"><label class="form-label">Token/API Key</label><input id="m_token" value="${m.token||''}" class="form-input"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+      <button onclick="salvarMarketplace('${id||''}')" class="btn-primary">Salvar</button>
+    </div>
+  `);
+}
+function salvarMarketplace(id) {
+  const db = loadDB();
+  const nome = document.getElementById('m_nome').value.trim();
+  if (!nome) { toast('Nome obrigatório','error'); return; }
+  const obj = {
+    id: id || uid(),
+    nome,
+    tipo: document.getElementById('m_tipo').value,
+    comissao: parseFloat(document.getElementById('m_com').value)||0,
+    cor: document.getElementById('m_cor').value,
+    icone: document.getElementById('m_icone').value || 'store',
+    urlApi: document.getElementById('m_url').value,
+    descricao: document.getElementById('m_desc').value,
+    token: document.getElementById('m_token').value,
+    ativo: id ? db.marketplaces.find(x=>x.id===id).ativo : false
+  };
+  if (id) { const i = db.marketplaces.findIndex(m=>m.id===id); db.marketplaces[i] = obj; }
+  else db.marketplaces.push(obj);
+  saveDB(db); closeModal(); renderMarketplaces(); toast('Marketplace salvo');
+}
+function toggleMp(id) {
+  const db = loadDB(); const m = db.marketplaces.find(x=>x.id===id);
+  m.ativo = !m.ativo; saveDB(db); renderMarketplaces();
+}
+function salvarTokenMp(id) {
+  const db = loadDB(); const m = db.marketplaces.find(x=>x.id===id);
+  m.token = document.querySelector(`[data-mp="${id}"]`).value;
+  saveDB(db); toast('Token salvo');
+}
+function delMp(id) {
+  if (!confirm('Excluir marketplace?')) return;
+  const db = loadDB(); db.marketplaces = db.marketplaces.filter(m=>m.id!==id);
+  saveDB(db); renderMarketplaces();
+}
+
+/* =========================
+   PADRONIZAÇÃO
+   ========================= */
+function renderPadronizacao() {
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center"><i class="fas fa-box text-indigo-600"></i></div>
+          <div><div class="section-title !mb-0">Produto Canônico</div><div class="section-sub !mb-0">Modelo padrão interno</div></div>
+        </div>
+        <pre class="text-xs bg-gray-900 text-emerald-300 p-4 rounded-lg overflow-auto">{
+  "sku": "string (único)",
+  "ean": "GTIN",
+  "nome": "string",
+  "categoria": "string",
+  "ncm": "8 dígitos",
+  "preco": "decimal",
+  "custo": "decimal",
+  "tipo": "simples | variacao",
+  "variacoes": [{
+    "sku","cor","tamanho","estoque","ean","preco"
+  }],
+  "marketplaceSku": {
+    "ml": "string",
+    "shopee": "string"
+  }
+}</pre>
+      </div>
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center"><i class="fas fa-shopping-cart text-purple-600"></i></div>
+          <div><div class="section-title !mb-0">Pedido Canônico</div><div class="section-sub !mb-0">Modelo padrão interno</div></div>
+        </div>
+        <pre class="text-xs bg-gray-900 text-emerald-300 p-4 rounded-lg overflow-auto">{
+  "numero": "string",
+  "data": "ISO 8601",
+  "origem": "ml|shopee|amazon|...",
+  "cliente": { "nome","cpfCnpj","endereco" },
+  "itens": [{
+    "produtoId","variacaoId","sku","qtd","preco"
+  }],
+  "total": "decimal",
+  "frete": "decimal",
+  "desconto": "decimal",
+  "status": "padronizado",
+  "formaPagto": "string"
+}</pre>
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <div class="section-title">Fluxo de Integração Multi-canal</div>
+      <div class="section-sub">Como o ERP se comunica com os marketplaces</div>
+      <div class="space-y-3">
+        ${[
+          {n:1,t:'Webhook / Polling',d:'Marketplace notifica novo pedido ou ERP consulta periodicamente via API.'},
+          {n:2,t:'Adapter',d:'Converte JSON do marketplace para formato canônico do ERP.'},
+          {n:3,t:'Match de Produto',d:'Identifica produto pelo SKU do marketplace (campo marketplaceSku) ou EAN.'},
+          {n:4,t:'Persistência',d:'Grava pedido, baixa estoque (pai ou variação), gera conta a receber.'},
+          {n:5,t:'Push de Status',d:'Ao emitir NF-e e gerar rastreio, envia de volta ao marketplace.'},
+          {n:6,t:'Conciliação',d:'Compara pagamentos recebidos do marketplace com pedidos.'}
+        ].map(s => `
+          <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold flex-shrink-0">${s.n}</div>
+            <div><div class="font-semibold text-sm text-gray-900">${s.t}</div><div class="text-sm text-gray-600">${s.d}</div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================
+   IMPORT / EXPORT
+   ========================= */
+function renderDados() {
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center"><i class="fas fa-file-export text-indigo-600"></i></div>
+          <div><div class="section-title !mb-0">Exportar</div><div class="section-sub !mb-0">Baixe o banco em JSON ou CSV</div></div>
+        </div>
+        <div class="space-y-2">
+          <button onclick="exportJSON()" class="w-full btn-primary">📦 JSON completo</button>
+          <button onclick="exportCSV('produtos')" class="w-full btn-secondary">📊 CSV - Produtos</button>
+          <button onclick="exportCSV('clientes')" class="w-full btn-secondary">📊 CSV - Clientes</button>
+          <button onclick="exportCSV('vendas')" class="w-full btn-secondary">📊 CSV - Vendas</button>
+          <button onclick="exportCSV('orcamentos')" class="w-full btn-secondary">📊 CSV - Orçamentos</button>
+          <button onclick="exportCSV('contas')" class="w-full btn-secondary">📊 CSV - Contas</button>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"><i class="fas fa-file-import text-emerald-600"></i></div>
+          <div><div class="section-title !mb-0">Importar</div><div class="section-sub !mb-0">Restaure backup ou importe CSV</div></div>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="form-label">Importar JSON (substitui tudo)</label>
+            <input type="file" accept=".json" onchange="importJSON(event)" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Tabela destino para CSV</label>
+            <select id="csvTarget" class="form-input">
+              <option value="produtos">Produtos</option>
+              <option value="clientes">Clientes</option>
+              <option value="vendas">Vendas</option>
+              <option value="orcamentos">Orçamentos</option>
+              <option value="contas">Contas</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Arquivo CSV</label>
+            <input type="file" accept=".csv" onchange="importCSV(event)" class="form-input">
+          </div>
+          <div class="divider"></div>
+          <button onclick="if(confirm('Apagar TODOS os dados?')){localStorage.removeItem('${DB_KEY}');seedIfEmpty();location.reload();}" class="w-full btn-secondary text-rose-600 border-rose-200 hover:bg-rose-50">🗑️ Resetar Banco</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function download(data, filename, type) {
+  const blob = new Blob([data], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function exportJSON() {
+  const db = loadDB();
+  download(JSON.stringify(db, null, 2), `erp_backup_${today()}.json`, 'application/json');
+  toast('JSON exportado');
+}
+function exportCSV(tabela) {
+  const db = loadDB();
+  const data = db[tabela];
+  if (!data.length) { toast('Tabela vazia','warn'); return; }
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => {
+    const v = r[h];
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v??'').replace(/"/g,'""');
+  }).map(v => `"${v}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  download(csv, `${tabela}_${today()}.csv`, 'text/csv');
+  toast('CSV exportado');
+}
+function importJSON(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.produtos || !data.clientes) throw new Error('Formato inválido');
+      saveDB(data); toast('Importado com sucesso'); setTimeout(()=>location.reload(), 800);
+    } catch(err) { toast('Erro: '+err.message,'error'); }
+  };
+  r.readAsText(f);
+}
+function importCSV(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const target = document.getElementById('csvTarget').value;
+  const r = new FileReader();
+  r.onload = ev => {
+    const lines = ev.target.result.split('\n').filter(l=>l.trim());
+    if (lines.length<2) { toast('CSV vazio','warn'); return; }
+    const headers = lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+    const db = loadDB();
+    for (let i=1; i<lines.length; i++) {
+      const cols = lines[i].match(/("([^"]|"")*"|[^,]+)/g) || [];
+      const obj = { id: uid() };
+      headers.forEach((h,idx) => {
+        let v = (cols[idx]||'').replace(/^"|"$/g,'').replace(/""/g,'"');
+        if (!isNaN(v) && v!=='') v = Number(v);
+        obj[h] = v;
+      });
+      db[target].push(obj);
+    }
+    saveDB(db); toast(`${lines.length-1} registros importados`);
+  };
+  r.readAsText(f);
+}
+
+/* =========================
+   CONFIG
+   ========================= */
+function renderConfig() {
+  const db = loadDB();
+  const e = db.config.empresa;
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="card p-6">
+        <div class="section-title">Dados da Empresa</div>
+        <div class="section-sub">Informações usadas em NF-e e relatórios</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="col-span-2"><label class="form-label">Razão Social</label><input id="cfg_razao" value="${e.razaoSocial||''}" class="form-input"></div>
+          <div><label class="form-label">CNPJ</label><input id="cfg_cnpj" value="${e.cnpj||''}" class="form-input"></div>
+          <div><label class="form-label">Inscrição Estadual</label><input id="cfg_ie" value="${e.ie||''}" class="form-input"></div>
+          <div class="col-span-2"><label class="form-label">Endereço</label><input id="cfg_end" value="${e.endereco||''}" class="form-input"></div>
+          <div><label class="form-label">Série NF-e</label><input id="cfg_serieNFe" type="number" value="${e.serieNFe||1}" class="form-input"></div>
+          <div><label class="form-label">Série NFC-e</label><input id="cfg_serieNFCe" type="number" value="${e.serieNFCe||1}" class="form-input"></div>
+          <div class="col-span-2"><label class="form-label">Ambiente</label><select id="cfg_amb" class="form-input"><option value="homologacao" ${e.ambiente==='homologacao'?'selected':''}>Homologação</option><option value="producao" ${e.ambiente==='producao'?'selected':''}>Produção</option></select></div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button onclick="salvarConfig()" class="btn-primary">Salvar Configurações</button>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="section-title">Créditos</div>
+        <div class="section-sub">Sobre o sistema</div>
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-5 rounded-xl">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-bold">WM</div>
+            <div>
+              <div class="font-bold">Walney Moreira Klein</div>
+              <div class="text-xs opacity-80">Desenvolvedor</div>
+            </div>
+          </div>
+          <div class="text-sm space-y-1">
+            <div><i class="fas fa-envelope mr-2"></i><a href="mailto:walneyk@hotmail.com" class="hover:underline">walneyk@hotmail.com</a></div>
+            <div><i class="fas fa-code-branch mr-2"></i>Versão MVP 2.0</div>
+            <div><i class="fas fa-calendar mr-2"></i>Outubro 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function salvarConfig() {
+  const db = loadDB();
+  db.config.empresa.razaoSocial = document.getElementById('cfg_razao').value;
+  db.config.empresa.cnpj = document.getElementById('cfg_cnpj').value;
+  db.config.empresa.ie = document.getElementById('cfg_ie').value;
+  db.config.empresa.endereco = document.getElementById('cfg_end').value;
+  db.config.empresa.serieNFe = parseInt(document.getElementById('cfg_serieNFe').value)||1;
+  db.config.empresa.serieNFCe = parseInt(document.getElementById('cfg_serieNFCe').value)||1;
+  db.config.ambiente = document.getElementById('cfg_amb').value;
+  saveDB(db); toast('Configurações salvas');
+}
+
+/* =========================
+   INIT
+   ========================= */
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+renderDashboard();
+</script>
+</body>
+</html>

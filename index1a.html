@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP Integrado - MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+  .sidebar-item.active { background: linear-gradient(90deg,#4f46e5,#7c3aed); color: white; }
+  .sidebar-item:hover:not(.active) { background: #eef2ff; }
+  .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50; align-items:center; justify-content:center; }
+  .modal.show { display:flex; }
+  .tab-btn.active { border-color:#4f46e5; color:#4f46e5; }
+  input, select, textarea { outline:none; }
+  input:focus, select:focus, textarea:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,0.1); }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div class="p-5 border-b">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">E</div>
+        <div>
+          <div class="font-bold text-gray-800">ERP Integrado</div>
+          <div class="text-xs text-gray-500">MVP v1.0</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <div class="text-xs uppercase text-gray-400 font-semibold px-3 pt-2 pb-1">Principal</div>
+      <button class="sidebar-item active w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="dashboard"><i class="fas fa-chart-line w-5"></i>Dashboard</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="produtos"><i class="fas fa-box w-5"></i>Produtos</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="clientes"><i class="fas fa-users w-5"></i>Clientes</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="vendas"><i class="fas fa-shopping-cart w-5"></i>Vendas / Pedidos</button>
+
+      <div class="text-xs uppercase text-gray-400 font-semibold px-3 pt-4 pb-1">Financeiro</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="contas"><i class="fas fa-file-invoice-dollar w-5"></i>Contas Pagar/Receber</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="fluxo"><i class="fas fa-money-bill-wave w-5"></i>Fluxo de Caixa</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="nfe"><i class="fas fa-file-alt w-5"></i>NF-e / NFC-e</button>
+
+      <div class="text-xs uppercase text-gray-400 font-semibold px-3 pt-4 pb-1">Integrações</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="marketplaces"><i class="fas fa-plug w-5"></i>Marketplaces</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="padronizacao"><i class="fas fa-sitemap w-5"></i>Padronização</button>
+
+      <div class="text-xs uppercase text-gray-400 font-semibold px-3 pt-4 pb-1">Sistema</div>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="dados"><i class="fas fa-database w-5"></i>Import/Export Dados</button>
+      <button class="sidebar-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700" data-page="config"><i class="fas fa-cog w-5"></i>Configurações</button>
+    </nav>
+    <div class="p-4 border-t text-xs text-gray-500">
+      <div class="font-semibold text-gray-700">Walney Moreira Klein</div>
+      <div>walneyk@hotmail.com</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-y-auto">
+    <header class="bg-white border-b px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div>
+        <h1 id="pageTitle" class="text-xl font-bold text-gray-800">Dashboard</h1>
+        <p id="pageSubtitle" class="text-xs text-gray-500">Visão geral do sistema</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-600" id="todayDate"></span>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-semibold">WM</div>
+      </div>
+    </header>
+
+    <div id="content" class="p-8"></div>
+
+    <footer class="p-6 text-center text-xs text-gray-500 border-t bg-white">
+      © 2026 ERP Integrado MVP • Desenvolvido por <strong>Walney Moreira Klein</strong> • <a href="mailto:walneyk@hotmail.com" class="text-indigo-600">walneyk@hotmail.com</a>
+    </footer>
+  </main>
+</div>
+
+<!-- Modal genérico -->
+<div id="modal" class="modal">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between p-5 border-b sticky top-0 bg-white">
+      <h3 id="modalTitle" class="font-bold text-gray-800"></h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="modalBody" class="p-5"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg hidden z-50"></div>
+
+<script>
+/* =========================
+   BANCO DE DADOS JSON (localStorage)
+   ========================= */
+const DB_KEY = 'erp_mvp_db_v1';
+
+const defaultDB = {
+  config: {
+    empresa: { razaoSocial: 'Minha Empresa LTDA', cnpj: '00.000.000/0001-00', ie: 'ISENTO', endereco: '', serieNFe: 1, ultimoNFe: 0, serieNFCe: 1, ultimoNFCe: 0 },
+    ambiente: 'homologacao' // homologacao ou producao
+  },
+  produtos: [],
+  clientes: [],
+  vendas: [],
+  contas: [], // pagar/receber
+  nfe: [],
+  marketplaces: [
+    { id: 'ml', nome: 'Mercado Livre', ativo: true, token: '', tipo: 'marketplace', comissao: 12 },
+    { id: 'shopee', nome: 'Shopee', ativo: false, token: '', tipo: 'marketplace', comissao: 18 },
+    { id: 'amazon', nome: 'Amazon', ativo: false, token: '', tipo: 'marketplace', comissao: 15 },
+    { id: 'magalu', nome: 'Magazine Luiza', ativo: false, token: '', tipo: 'marketplace', comissao: 14 },
+    { id: 'loja_propria', nome: 'Loja Própria', ativo: true, token: '', tipo: 'proprio', comissao: 0 }
+  ],
+  categorias: ['Eletrônicos','Vestuário','Casa','Alimentos','Outros'],
+  formasPagto: ['Dinheiro','PIX','Cartão Crédito','Cartão Débito','Boleto','Transferência'],
+  tiposConta: ['pagar','receber']
+};
+
+function loadDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (!raw) { saveDB(defaultDB); return JSON.parse(JSON.stringify(defaultDB)); }
+  try { return JSON.parse(raw); } catch { return JSON.parse(JSON.stringify(defaultDB)); }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmtBRL(v) { return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function fmtDate(d) { return new Date(d).toLocaleDateString('pt-BR'); }
+function today() { return new Date().toISOString().slice(0,10); }
+
+/* Seed inicial para demonstração */
+function seedIfEmpty() {
+  const db = loadDB();
+  if (db.produtos.length === 0) {
+    db.produtos = [
+      { id: uid(), sku: 'CEL-001', nome: 'Smartphone XYZ 128GB', categoria: 'Eletrônicos', preco: 1899.00, custo: 1400.00, estoque: 25, ncm: '85171301', unidade: 'UN', ean: '7890000000001', marketplaceSku: { ml: 'MLZ-123', shopee: 'SP-XYZ-001' } },
+      { id: uid(), sku: 'CAM-010', nome: 'Camiseta Básica Algodão', categoria: 'Vestuário', preco: 59.90, custo: 22.00, estoque: 120, ncm: '61091000', unidade: 'UN', ean: '7890000000002', marketplaceSku: {} }
+    ];
+    db.clientes = [
+      { id: uid(), nome: 'Consumidor Final', tipo: 'F', cpfCnpj: '000.000.000-00', email: '', telefone: '', endereco: {} },
+      { id: uid(), nome: 'João da Silva', tipo: 'F', cpfCnpj: '123.456.789-00', email: 'joao@email.com', telefone: '(11) 98888-7777', endereco: { rua: 'Rua A', numero: '100', cidade: 'São Paulo', uf: 'SP', cep: '01000-000' } }
+    ];
+    db.vendas = [
+      { id: uid(), numero: '000001', data: today(), clienteId: db.clientes[1].id, origem: 'ml', itens: [{ produtoId: db.produtos[0].id, qtd: 1, preco: 1899 }], total: 1899, status: 'aprovado', formaPagto: 'Cartão Crédito' }
+    ];
+    saveDB(db);
+  }
+}
+seedIfEmpty();
+
+/* =========================
+   NAVEGAÇÃO
+   ========================= */
+const pages = {
+  dashboard: { title: 'Dashboard', subtitle: 'Visão geral do sistema', render: renderDashboard },
+  produtos: { title: 'Produtos', subtitle: 'Cadastro padronizado para integração com marketplaces', render: renderProdutos },
+  clientes: { title: 'Clientes', subtitle: 'Cadastro de clientes PF/PJ', render: renderClientes },
+  vendas: { title: 'Vendas / Pedidos', subtitle: 'Pedidos de todos os canais unificados', render: renderVendas },
+  contas: { title: 'Contas a Pagar / Receber', subtitle: 'Gestão financeira', render: renderContas },
+  fluxo: { title: 'Fluxo de Caixa', subtitle: 'Entradas e saídas projetadas', render: renderFluxo },
+  nfe: { title: 'NF-e / NFC-e', subtitle: 'Emissão de documentos fiscais', render: renderNFe },
+  marketplaces: { title: 'Marketplaces', subtitle: 'Integrações com plataformas de e-commerce', render: renderMarketplaces },
+  padronizacao: { title: 'Padronização', subtitle: 'Mapeamento de campos para integrações', render: renderPadronizacao },
+  dados: { title: 'Import / Export Dados', subtitle: 'Backup e migração JSON/CSV', render: renderDados },
+  config: { title: 'Configurações', subtitle: 'Dados da empresa e parâmetros', render: renderConfig }
+};
+
+document.querySelectorAll('.sidebar-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const page = btn.dataset.page;
+    document.getElementById('pageTitle').textContent = pages[page].title;
+    document.getElementById('pageSubtitle').textContent = pages[page].subtitle;
+    pages[page].render();
+  });
+});
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg z-50 text-white ' + (type==='error'?'bg-red-600':type==='warn'?'bg-yellow-600':'bg-gray-900');
+  setTimeout(()=>t.classList.add('hidden'), 2500);
+}
+
+function openModal(title, html) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+/* =========================
+   DASHBOARD
+   ========================= */
+function renderDashboard() {
+  const db = loadDB();
+  const hoje = today();
+  const mesAtual = hoje.slice(0,7);
+
+  const vendasMes = db.vendas.filter(v => v.data.startsWith(mesAtual));
+  const totalVendasMes = vendasMes.reduce((s,v)=>s+v.total,0);
+  const estoqueTotal = db.produtos.reduce((s,p)=>s+(p.estoque||0),0);
+  const valorEstoque = db.produtos.reduce((s,p)=>s+(p.estoque||0)*(p.custo||0),0);
+
+  const aReceber = db.contas.filter(c=>c.tipo==='receber'&&c.status!=='pago'&&c.vencimento<hoje).reduce((s,c)=>s+c.valor,0);
+  const aPagar = db.contas.filter(c=>c.tipo==='pagar'&&c.status!=='pago'&&c.vencimento<hoje).reduce((s,c)=>s+c.valor,0);
+
+  // Vendas por origem
+  const porOrigem = {};
+  db.vendas.forEach(v => { porOrigem[v.origem] = (porOrigem[v.origem]||0) + v.total; });
+
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">Vendas no Mês</div><div class="text-2xl font-bold text-indigo-600 mt-2">${fmtBRL(totalVendasMes)}</div><div class="text-xs text-gray-400 mt-1">${vendasMes.length} pedidos</div></div>
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">Estoque (Qtd)</div><div class="text-2xl font-bold text-emerald-600 mt-2">${estoqueTotal}</div><div class="text-xs text-gray-400 mt-1">Valor: ${fmtBRL(valorEstoque)}</div></div>
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">A Receber (Venc.)</div><div class="text-2xl font-bold text-amber-600 mt-2">${fmtBRL(aReceber)}</div><div class="text-xs text-gray-400 mt-1">Contas vencidas</div></div>
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">A Pagar (Venc.)</div><div class="text-2xl font-bold text-rose-600 mt-2">${fmtBRL(aPagar)}</div><div class="text-xs text-gray-400 mt-1">Contas vencidas</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-800 mb-4">Vendas por Canal</h3>
+        <canvas id="chartOrigem" height="180"></canvas>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-800 mb-4">Últimos Pedidos</h3>
+        <div class="space-y-2">
+          ${db.vendas.slice(-5).reverse().map(v => {
+            const cli = db.clientes.find(c=>c.id===v.clienteId);
+            const mp = db.marketplaces.find(m=>m.id===v.origem);
+            return `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div class="font-semibold text-sm">#${v.numero} • ${cli?.nome||'-'}</div>
+                <div class="text-xs text-gray-500">${fmtDate(v.data)} • ${mp?.nome||v.origem}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-indigo-600">${fmtBRL(v.total)}</div>
+                <span class="badge bg-emerald-100 text-emerald-700">${v.status}</span>
+              </div>
+            </div>`;
+          }).join('') || '<div class="text-sm text-gray-400 text-center py-6">Nenhum pedido</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const labels = Object.keys(porOrigem).map(k => {
+    const mp = db.marketplaces.find(m=>m.id===k);
+    return mp?.nome || k;
+  });
+  const data = Object.values(porOrigem);
+  if (data.length) {
+    new Chart(document.getElementById('chartOrigem'), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: ['#4f46e5','#7c3aed','#ec4899','#f59e0b','#10b981','#06b6d4'] }] },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+}
+
+/* =========================
+   PRODUTOS
+   ========================= */
+function renderProdutos() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="flex justify-between mb-4">
+      <input id="buscaProd" placeholder="Buscar por nome, SKU, EAN..." class="px-4 py-2 border rounded-lg w-80">
+      <button onclick="formProduto()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Novo Produto</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+          <tr><th class="p-3 text-left">SKU</th><th class="p-3 text-left">Nome</th><th class="p-3 text-left">Categoria</th><th class="p-3 text-right">Preço</th><th class="p-3 text-right">Custo</th><th class="p-3 text-right">Estoque</th><th class="p-3 text-left">NCM</th><th class="p-3 text-center">Ações</th></tr>
+        </thead>
+        <tbody id="tbProd"></tbody>
+      </table>
+    </div>
+  `;
+  const render = (filtro='') => {
+    const f = filtro.toLowerCase();
+    const lista = db.produtos.filter(p => !f || p.nome.toLowerCase().includes(f) || p.sku.toLowerCase().includes(f) || (p.ean||'').includes(f));
+    document.getElementById('tbProd').innerHTML = lista.map(p => `
+      <tr class="border-t hover:bg-gray-50">
+        <td class="p-3 font-mono text-xs">${p.sku}</td>
+        <td class="p-3 font-semibold">${p.nome}</td>
+        <td class="p-3">${p.categoria||'-'}</td>
+        <td class="p-3 text-right">${fmtBRL(p.preco)}</td>
+        <td class="p-3 text-right text-gray-500">${fmtBRL(p.custo)}</td>
+        <td class="p-3 text-right">${p.estoque||0}</td>
+        <td class="p-3 font-mono text-xs">${p.ncm||'-'}</td>
+        <td class="p-3 text-center">
+          <button onclick="formProduto('${p.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2"><i class="fas fa-edit"></i></button>
+          <button onclick="delProduto('${p.id}')" class="text-rose-600 hover:text-rose-800"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="8" class="p-6 text-center text-gray-400">Nenhum produto</td></tr>';
+  };
+  render();
+  document.getElementById('buscaProd').addEventListener('input', e => render(e.target.value));
+}
+
+function formProduto(id) {
+  const db = loadDB();
+  const p = id ? db.produtos.find(x=>x.id===id) : { sku:'', nome:'', categoria:'', preco:0, custo:0, estoque:0, ncm:'', unidade:'UN', ean:'', marketplaceSku:{} };
+  const cats = db.categorias.map(c=>`<option ${c===p.categoria?'selected':''}>${c}</option>`).join('');
+  const mps = db.marketplaces.map(m => `<div class="flex items-center gap-2"><label class="w-32 text-xs text-gray-600">${m.nome}</label><input data-mp="${m.id}" value="${(p.marketplaceSku||{})[m.id]||''}" class="flex-1 px-2 py-1 border rounded text-sm" placeholder="SKU no ${m.nome}"></div>`).join('');
+
+  openModal(id?'Editar Produto':'Novo Produto', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs text-gray-600">SKU *</label><input id="f_sku" value="${p.sku}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">EAN/GTIN</label><input id="f_ean" value="${p.ean||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div class="col-span-2"><label class="text-xs text-gray-600">Nome *</label><input id="f_nome" value="${p.nome}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Categoria</label><select id="f_cat">${cats}</select></div>
+      <div><label class="text-xs text-gray-600">Unidade</label><select id="f_un"><option ${p.unidade==='UN'?'selected':''}>UN</option><option ${p.unidade==='KG'?'selected':''}>KG</option><option ${p.unidade==='LT'?'selected':''}>LT</option><option ${p.unidade==='MT'?'selected':''}>MT</option></select></div>
+      <div><label class="text-xs text-gray-600">Preço Venda</label><input id="f_preco" type="number" step="0.01" value="${p.preco}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Custo</label><input id="f_custo" type="number" step="0.01" value="${p.custo}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Estoque</label><input id="f_est" type="number" value="${p.estoque||0}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">NCM</label><input id="f_ncm" value="${p.ncm||''}" class="w-full px-3 py-2 border rounded-lg" placeholder="00000000"></div>
+    </div>
+    <div class="mt-4 p-3 bg-indigo-50 rounded-lg">
+      <div class="text-xs font-semibold text-indigo-700 mb-2"><i class="fas fa-plug mr-1"></i>SKUs nos Marketplaces (integração)</div>
+      ${mps}
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
+      <button onclick="salvarProduto('${id||''}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Salvar</button>
+    </div>
+  `);
+}
+
+function salvarProduto(id) {
+  const db = loadDB();
+  const sku = document.getElementById('f_sku').value.trim();
+  const nome = document.getElementById('f_nome').value.trim();
+  if (!sku || !nome) { toast('SKU e Nome obrigatórios','error'); return; }
+  const mps = {};
+  document.querySelectorAll('[data-mp]').forEach(i => { if (i.value.trim()) mps[i.dataset.mp] = i.value.trim(); });
+  const obj = {
+    id: id || uid(), sku, nome,
+    categoria: document.getElementById('f_cat').value,
+    unidade: document.getElementById('f_un').value,
+    preco: parseFloat(document.getElementById('f_preco').value)||0,
+    custo: parseFloat(document.getElementById('f_custo').value)||0,
+    estoque: parseInt(document.getElementById('f_est').value)||0,
+    ncm: document.getElementById('f_ncm').value.trim(),
+    ean: document.getElementById('f_ean').value.trim(),
+    marketplaceSku: mps
+  };
+  if (id) { const i = db.produtos.findIndex(p=>p.id===id); db.produtos[i] = obj; }
+  else db.produtos.push(obj);
+  saveDB(db); closeModal(); renderProdutos(); toast('Produto salvo');
+}
+function delProduto(id) {
+  if (!confirm('Excluir produto?')) return;
+  const db = loadDB(); db.produtos = db.produtos.filter(p=>p.id!==id); saveDB(db); renderProdutos(); toast('Excluído');
+}
+
+/* =========================
+   CLIENTES
+   ========================= */
+function renderClientes() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="flex justify-between mb-4">
+      <input id="buscaCli" placeholder="Buscar..." class="px-4 py-2 border rounded-lg w-80">
+      <button onclick="formCliente()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Novo Cliente</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 text-xs uppercase"><tr><th class="p-3 text-left">Nome</th><th class="p-3 text-left">Tipo</th><th class="p-3 text-left">CPF/CNPJ</th><th class="p-3 text-left">Email</th><th class="p-3 text-left">Telefone</th><th class="p-3 text-center">Ações</th></tr></thead>
+        <tbody id="tbCli"></tbody>
+      </table>
+    </div>
+  `;
+  const render = (f='') => {
+    const fl = f.toLowerCase();
+    const lista = db.clientes.filter(c => !fl || c.nome.toLowerCase().includes(fl) || (c.cpfCnpj||'').includes(fl));
+    document.getElementById('tbCli').innerHTML = lista.map(c => `
+      <tr class="border-t hover:bg-gray-50">
+        <td class="p-3 font-semibold">${c.nome}</td>
+        <td class="p-3"><span class="badge ${c.tipo==='J'?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-700'}">${c.tipo==='J'?'PJ':'PF'}</span></td>
+        <td class="p-3 font-mono text-xs">${c.cpfCnpj||'-'}</td>
+        <td class="p-3 text-gray-600">${c.email||'-'}</td>
+        <td class="p-3 text-gray-600">${c.telefone||'-'}</td>
+        <td class="p-3 text-center">
+          <button onclick="formCliente('${c.id}')" class="text-indigo-600 mr-2"><i class="fas fa-edit"></i></button>
+          <button onclick="delCliente('${c.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhum cliente</td></tr>';
+  };
+  render();
+  document.getElementById('buscaCli').addEventListener('input', e => render(e.target.value));
+}
+function formCliente(id) {
+  const db = loadDB();
+  const c = id ? db.clientes.find(x=>x.id===id) : { nome:'', tipo:'F', cpfCnpj:'', email:'', telefone:'', endereco:{} };
+  openModal(id?'Editar Cliente':'Novo Cliente', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs text-gray-600">Tipo</label><select id="f_tipo"><option value="F" ${c.tipo==='F'?'selected':''}>Pessoa Física</option><option value="J" ${c.tipo==='J'?'selected':''}>Pessoa Jurídica</option></select></div>
+      <div><label class="text-xs text-gray-600">CPF/CNPJ</label><input id="f_doc" value="${c.cpfCnpj||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div class="col-span-2"><label class="text-xs text-gray-600">Nome / Razão Social *</label><input id="f_nome" value="${c.nome}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Email</label><input id="f_email" value="${c.email||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Telefone</label><input id="f_tel" value="${c.telefone||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">CEP</label><input id="f_cep" value="${c.endereco?.cep||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">UF</label><input id="f_uf" value="${c.endereco?.uf||''}" maxlength="2" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div class="col-span-2"><label class="text-xs text-gray-600">Cidade</label><input id="f_cid" value="${c.endereco?.cidade||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
+      <button onclick="salvarCliente('${id||''}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Salvar</button>
+    </div>
+  `);
+}
+function salvarCliente(id) {
+  const db = loadDB();
+  const nome = document.getElementById('f_nome').value.trim();
+  if (!nome) { toast('Nome obrigatório','error'); return; }
+  const obj = {
+    id: id||uid(), nome,
+    tipo: document.getElementById('f_tipo').value,
+    cpfCnpj: document.getElementById('f_doc').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    telefone: document.getElementById('f_tel').value.trim(),
+    endereco: { cep: document.getElementById('f_cep').value, uf: document.getElementById('f_uf').value, cidade: document.getElementById('f_cid').value }
+  };
+  if (id) { const i = db.clientes.findIndex(c=>c.id===id); db.clientes[i]=obj; } else db.clientes.push(obj);
+  saveDB(db); closeModal(); renderClientes(); toast('Cliente salvo');
+}
+function delCliente(id) { if (!confirm('Excluir?')) return; const db=loadDB(); db.clientes=db.clientes.filter(c=>c.id!==id); saveDB(db); renderClientes(); }
+
+/* =========================
+   VENDAS
+   ========================= */
+function renderVendas() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="flex justify-between mb-4">
+      <div class="flex gap-2">
+        <select id="fltOrigem" class="px-3 py-2 border rounded-lg">
+          <option value="">Todas origens</option>
+          ${db.marketplaces.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('')}
+        </select>
+        <select id="fltStatus" class="px-3 py-2 border rounded-lg">
+          <option value="">Todos status</option>
+          <option>pendente</option><option>aprovado</option><option>enviado</option><option>entregue</option><option>cancelado</option>
+        </select>
+      </div>
+      <button onclick="formVenda()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Nova Venda</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 text-xs uppercase"><tr><th class="p-3 text-left">Número</th><th class="p-3 text-left">Data</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Origem</th><th class="p-3 text-right">Total</th><th class="p-3 text-left">Status</th><th class="p-3 text-center">Ações</th></tr></thead>
+        <tbody id="tbVendas"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const orig = document.getElementById('fltOrigem').value;
+    const st = document.getElementById('fltStatus').value;
+    const lista = db.vendas.filter(v => (!orig||v.origem===orig) && (!st||v.status===st));
+    document.getElementById('tbVendas').innerHTML = lista.map(v => {
+      const cli = db.clientes.find(c=>c.id===v.clienteId);
+      const mp = db.marketplaces.find(m=>m.id===v.origem);
+      const statusColor = { aprovado:'bg-emerald-100 text-emerald-700', enviado:'bg-blue-100 text-blue-700', entregue:'bg-gray-200 text-gray-700', pendente:'bg-amber-100 text-amber-700', cancelado:'bg-rose-100 text-rose-700' }[v.status]||'bg-gray-100';
+      return `<tr class="border-t hover:bg-gray-50">
+        <td class="p-3 font-mono text-xs">#${v.numero}</td>
+        <td class="p-3">${fmtDate(v.data)}</td>
+        <td class="p-3">${cli?.nome||'-'}</td>
+        <td class="p-3"><span class="badge bg-indigo-100 text-indigo-700">${mp?.nome||v.origem}</span></td>
+        <td class="p-3 text-right font-semibold">${fmtBRL(v.total)}</td>
+        <td class="p-3"><span class="badge ${statusColor}">${v.status}</span></td>
+        <td class="p-3 text-center">
+          <button onclick="verVenda('${v.id}')" class="text-indigo-600 mr-2"><i class="fas fa-eye"></i></button>
+          <button onclick="delVenda('${v.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhuma venda</td></tr>';
+  };
+  render();
+  document.getElementById('fltOrigem').addEventListener('change', render);
+  document.getElementById('fltStatus').addEventListener('change', render);
+}
+
+function formVenda() {
+  const db = loadDB();
+  const optsCli = db.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const optsMp = db.marketplaces.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');
+  const optsPag = db.formasPagto.map(f=>`<option>${f}</option>`).join('');
+  const optsProd = db.produtos.map(p=>`<option value="${p.id}" data-preco="${p.preco}">${p.sku} - ${p.nome}</option>`).join('');
+
+  openModal('Nova Venda', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs text-gray-600">Data</label><input id="v_data" type="date" value="${today()}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Origem / Canal</label><select id="v_orig">${optsMp}</select></div>
+      <div><label class="text-xs text-gray-600">Cliente</label><select id="v_cli">${optsCli}</select></div>
+      <div><label class="text-xs text-gray-600">Forma Pagamento</label><select id="v_pag">${optsPag}</select></div>
+    </div>
+    <div class="mt-4">
+      <label class="text-xs text-gray-600">Itens</label>
+      <div id="itensWrap" class="space-y-2 mt-1"></div>
+      <button onclick="addItem()" class="mt-2 text-sm text-indigo-600"><i class="fas fa-plus mr-1"></i>Adicionar item</button>
+    </div>
+    <div class="mt-4 p-3 bg-indigo-50 rounded-lg flex justify-between items-center">
+      <span class="font-semibold text-indigo-700">Total:</span>
+      <span id="v_total" class="text-xl font-bold text-indigo-700">R$ 0,00</span>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
+      <button onclick="salvarVenda()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Salvar</button>
+    </div>
+  `);
+  window._itens = [];
+  addItem();
+}
+
+function addItem() {
+  const db = loadDB();
+  const opts = db.produtos.map(p=>`<option value="${p.id}" data-preco="${p.preco}">${p.sku} - ${p.nome}</option>`).join('');
+  const idx = window._itens.length;
+  window._itens.push({ produtoId:'', qtd:1, preco:0 });
+  const wrap = document.getElementById('itensWrap');
+  const div = document.createElement('div');
+  div.className = 'grid grid-cols-12 gap-2 items-center';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <select class="col-span-6 px-2 py-2 border rounded-lg text-sm prod-sel">${opts}</select>
+    <input type="number" min="1" value="1" class="col-span-2 px-2 py-2 border rounded-lg text-sm qtd-sel">
+    <input type="number" step="0.01" value="0" class="col-span-3 px-2 py-2 border rounded-lg text-sm preco-sel">
+    <button onclick="remItem(this)" class="col-span-1 text-rose-600"><i class="fas fa-trash"></i></button>
+  `;
+  wrap.appendChild(div);
+  div.querySelector('.prod-sel').addEventListener('change', e => {
+    const opt = e.target.selectedOptions[0];
+    const p = db.produtos.find(p=>p.id===opt.value);
+    div.querySelector('.preco-sel').value = p?.preco||0;
+    calcTotal();
+  });
+  div.querySelector('.qtd-sel').addEventListener('input', calcTotal);
+  div.querySelector('.preco-sel').addEventListener('input', calcTotal);
+}
+function remItem(btn) {
+  btn.parentElement.remove();
+  calcTotal();
+}
+function calcTotal() {
+  let t = 0;
+  document.querySelectorAll('#itensWrap > div').forEach(d => {
+    t += (parseFloat(d.querySelector('.qtd-sel').value)||0) * (parseFloat(d.querySelector('.preco-sel').value)||0);
+  });
+  document.getElementById('v_total').textContent = fmtBRL(t);
+}
+
+function salvarVenda() {
+  const db = loadDB();
+  const itens = [];
+  document.querySelectorAll('#itensWrap > div').forEach(d => {
+    const pid = d.querySelector('.prod-sel').value;
+    const qtd = parseInt(d.querySelector('.qtd-sel').value)||0;
+    const preco = parseFloat(d.querySelector('.preco-sel').value)||0;
+    if (pid && qtd>0) itens.push({ produtoId: pid, qtd, preco });
+  });
+  if (!itens.length) { toast('Adicione ao menos um item','error'); return; }
+  const total = itens.reduce((s,i)=>s+i.qtd*i.preco,0);
+  const numero = String((db.config.empresa.ultimoNFe||0)+1).padStart(6,'0');
+  const venda = {
+    id: uid(), numero, data: document.getElementById('v_data').value,
+    clienteId: document.getElementById('v_cli').value,
+    origem: document.getElementById('v_orig').value,
+    formaPagto: document.getElementById('v_pag').value,
+    itens, total, status: 'aprovado'
+  };
+  db.vendas.push(venda);
+  // baixa estoque
+  itens.forEach(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    if (p) p.estoque = Math.max(0, (p.estoque||0) - i.qtd);
+  });
+  // gera conta a receber
+  db.contas.push({
+    id: uid(), tipo: 'receber', descricao: `Venda #${numero}`,
+    valor: total, vencimento: venda.data, status: 'pendente', vendaId: venda.id
+  });
+  saveDB(db); closeModal(); renderVendas(); toast('Venda registrada');
+}
+
+function verVenda(id) {
+  const db = loadDB();
+  const v = db.vendas.find(x=>x.id===id);
+  const cli = db.clientes.find(c=>c.id===v.clienteId);
+  const mp = db.marketplaces.find(m=>m.id===v.origem);
+  const itens = v.itens.map(i => {
+    const p = db.produtos.find(p=>p.id===i.produtoId);
+    return `<tr class="border-t"><td class="p-2">${p?.sku||'-'}</td><td class="p-2">${p?.nome||'-'}</td><td class="p-2 text-right">${i.qtd}</td><td class="p-2 text-right">${fmtBRL(i.preco)}</td><td class="p-2 text-right font-semibold">${fmtBRL(i.qtd*i.preco)}</td></tr>`;
+  }).join('');
+  openModal(`Venda #${v.numero}`, `
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><strong>Cliente:</strong> ${cli?.nome||'-'}</div>
+      <div><strong>Origem:</strong> ${mp?.nome||v.origem}</div>
+      <div><strong>Data:</strong> ${fmtDate(v.data)}</div>
+      <div><strong>Pagamento:</strong> ${v.formaPagto}</div>
+    </div>
+    <table class="w-full text-sm mt-4">
+      <thead class="bg-gray-50"><tr><th class="p-2 text-left">SKU</th><th class="p-2 text-left">Produto</th><th class="p-2 text-right">Qtd</th><th class="p-2 text-right">Preço</th><th class="p-2 text-right">Total</th></tr></thead>
+      <tbody>${itens}</tbody>
+      <tfoot><tr><td colspan="4" class="p-2 text-right font-bold">Total:</td><td class="p-2 text-right font-bold text-indigo-600">${fmtBRL(v.total)}</td></tr></tfoot>
+    </table>
+  `);
+}
+function delVenda(id) { if (!confirm('Excluir venda?')) return; const db=loadDB(); db.vendas=db.vendas.filter(v=>v.id!==id); saveDB(db); renderVendas(); }
+
+/* =========================
+   CONTAS A PAGAR / RECEBER
+   ========================= */
+function renderContas() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="flex gap-2 mb-4">
+      <button class="tab-btn active px-4 py-2 border-b-2 border-transparent text-sm font-semibold" data-tab="receber">A Receber</button>
+      <button class="tab-btn px-4 py-2 border-b-2 border-transparent text-sm font-semibold" data-tab="pagar">A Pagar</button>
+      <div class="flex-1"></div>
+      <button onclick="formConta()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Nova Conta</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 text-xs uppercase"><tr><th class="p-3 text-left">Descrição</th><th class="p-3 text-left">Vencimento</th><th class="p-3 text-right">Valor</th><th class="p-3 text-left">Status</th><th class="p-3 text-center">Ações</th></tr></thead>
+        <tbody id="tbContas"></tbody>
+      </table>
+    </div>
+  `;
+  let tab = 'receber';
+  const render = () => {
+    const lista = db.contas.filter(c => c.tipo===tab).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+    document.getElementById('tbContas').innerHTML = lista.map(c => {
+      const vencida = c.status!=='pago' && c.vencimento < today();
+      return `<tr class="border-t hover:bg-gray-50 ${vencida?'bg-rose-50':''}">
+        <td class="p-3">${c.descricao}</td>
+        <td class="p-3">${fmtDate(c.vencimento)}</td>
+        <td class="p-3 text-right font-semibold">${fmtBRL(c.valor)}</td>
+        <td class="p-3"><span class="badge ${c.status==='pago'?'bg-emerald-100 text-emerald-700':vencida?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${c.status==='pago'?'Pago':vencida?'Vencida':'Pendente'}</span></td>
+        <td class="p-3 text-center">
+          ${c.status!=='pago'?`<button onclick="pagarConta('${c.id}')" class="text-emerald-600 mr-2" title="Baixar"><i class="fas fa-check-circle"></i></button>`:''}
+          <button onclick="delConta('${c.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" class="p-6 text-center text-gray-400">Nenhuma conta</td></tr>';
+  };
+  render();
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); tab = b.dataset.tab; render();
+  }));
+}
+function formConta() {
+  openModal('Nova Conta', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs text-gray-600">Tipo</label><select id="c_tipo"><option value="receber">A Receber</option><option value="pagar">A Pagar</option></select></div>
+      <div><label class="text-xs text-gray-600">Vencimento</label><input id="c_venc" type="date" value="${today()}" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div class="col-span-2"><label class="text-xs text-gray-600">Descrição</label><input id="c_desc" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Valor</label><input id="c_val" type="number" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+      <div><label class="text-xs text-gray-600">Categoria</label><input id="c_cat" class="w-full px-3 py-2 border rounded-lg" placeholder="Ex: Fornecedores"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
+      <button onclick="salvarConta()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Salvar</button>
+    </div>
+  `);
+}
+function salvarConta() {
+  const db = loadDB();
+  const desc = document.getElementById('c_desc').value.trim();
+  const val = parseFloat(document.getElementById('c_val').value)||0;
+  if (!desc || val<=0) { toast('Preencha descrição e valor','error'); return; }
+  db.contas.push({
+    id: uid(), tipo: document.getElementById('c_tipo').value,
+    descricao: desc, valor: val,
+    vencimento: document.getElementById('c_venc').value,
+    categoria: document.getElementById('c_cat').value,
+    status: 'pendente'
+  });
+  saveDB(db); closeModal(); renderContas(); toast('Conta criada');
+}
+function pagarConta(id) {
+  const db = loadDB();
+  const c = db.contas.find(x=>x.id===id);
+  c.status = 'pago'; c.dataPagto = today();
+  saveDB(db); renderContas(); toast('Baixada');
+}
+function delConta(id) { if (!confirm('Excluir?')) return; const db=loadDB(); db.contas=db.contas.filter(c=>c.id!==id); saveDB(db); renderContas(); }
+
+/* =========================
+   FLUXO DE CAIXA
+   ========================= */
+function renderFluxo() {
+  const db = loadDB();
+  const hoje = new Date();
+  const labels = [], entradas = [], saidas = [], saldos = [];
+  let saldo = 0;
+  for (let i=29; i>=0; i--) {
+    const d = new Date(hoje); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+    const ent = db.contas.filter(c=>c.tipo==='receber'&&c.vencimento===ds).reduce((s,c)=>s+c.valor,0);
+    const sai = db.contas.filter(c=>c.tipo==='pagar'&&c.vencimento===ds).reduce((s,c)=>s+c.valor,0);
+    entradas.push(ent); saidas.push(sai);
+    saldo += ent - sai; saldos.push(saldo);
+  }
+  document.getElementById('content').innerHTML = `
+    <div class="card p-5 mb-6">
+      <h3 class="font-bold text-gray-800 mb-4">Fluxo de Caixa - Últimos 30 dias</h3>
+      <canvas id="chartFluxo" height="100"></canvas>
+    </div>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">Total Entradas (30d)</div><div class="text-2xl font-bold text-emerald-600 mt-2">${fmtBRL(entradas.reduce((a,b)=>a+b,0))}</div></div>
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">Total Saídas (30d)</div><div class="text-2xl font-bold text-rose-600 mt-2">${fmtBRL(saidas.reduce((a,b)=>a+b,0))}</div></div>
+      <div class="card p-5"><div class="text-xs text-gray-500 uppercase">Saldo Projetado</div><div class="text-2xl font-bold text-indigo-600 mt-2">${fmtBRL(saldo)}</div></div>
+    </div>
+  `;
+  new Chart(document.getElementById('chartFluxo'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Entradas', data: entradas, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: true },
+      { label: 'Saídas', data: saidas, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', tension: 0.3, fill: true },
+      { label: 'Saldo Acum.', data: saldos, borderColor: '#4f46e5', tension: 0.3, borderDash: [5,5] }
+    ]},
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+/* =========================
+   NF-E / NFC-E
+   ========================= */
+function renderNFe() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 text-sm text-amber-800">
+      <i class="fas fa-info-circle mr-1"></i> <strong>MVP:</strong> A emissão real de NF-e/NFC-e requer certificado digital A1/A3, credenciamento na SEFAZ e uso de biblioteca autorizada (ex: NFe.io, Sped, eNotas). Aqui simulamos o documento fiscal com numeração controlada.
+    </div>
+    <div class="flex justify-between mb-4">
+      <div class="text-sm text-gray-600">Ambiente: <span class="badge ${db.config.ambiente==='producao'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}">${db.config.ambiente}</span></div>
+      <button onclick="emitirNFe()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-file-signature mr-1"></i>Emitir NF-e a partir de venda</button>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 text-xs uppercase"><tr><th class="p-3 text-left">Número</th><th class="p-3 text-left">Tipo</th><th class="p-3 text-left">Data</th><th class="p-3 text-left">Destinatário</th><th class="p-3 text-right">Valor</th><th class="p-3 text-left">Status</th><th class="p-3 text-center">Ações</th></tr></thead>
+        <tbody id="tbNfe"></tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('tbNfe').innerHTML = db.nfe.map(n => {
+    const cli = db.clientes.find(c=>c.id===n.clienteId);
+    return `<tr class="border-t hover:bg-gray-50">
+      <td class="p-3 font-mono text-xs">${n.numero}</td>
+      <td class="p-3"><span class="badge bg-indigo-100 text-indigo-700">${n.tipo}</span></td>
+      <td class="p-3">${fmtDate(n.data)}</td>
+      <td class="p-3">${cli?.nome||'-'}</td>
+      <td class="p-3 text-right font-semibold">${fmtBRL(n.valor)}</td>
+      <td class="p-3"><span class="badge bg-emerald-100 text-emerald-700">${n.status}</span></td>
+      <td class="p-3 text-center"><button onclick="verNFe('${n.id}')" class="text-indigo-600"><i class="fas fa-eye"></i></button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhuma NF-e emitida</td></tr>';
+}
+
+function emitirNFe() {
+  const db = loadDB();
+  const pendentes = db.vendas.filter(v => !db.nfe.find(n=>n.vendaId===v.id));
+  if (!pendentes.length) { toast('Todas vendas já possuem NF-e','warn'); return; }
+  const opts = pendentes.map(v => {
+    const cli = db.clientes.find(c=>c.id===v.clienteId);
+    return `<option value="${v.id}">#${v.numero} - ${cli?.nome} - ${fmtBRL(v.total)}</option>`;
+  }).join('');
+  openModal('Emitir NF-e / NFC-e', `
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs text-gray-600">Tipo</label><select id="n_tipo"><option>NF-e</option><option>NFC-e</option></select></div>
+      <div><label class="text-xs text-gray-600">Venda</label><select id="n_venda">${opts}</select></div>
+    </div>
+    <div class="mt-4 p-3 bg-blue-50 rounded text-xs text-blue-800">
+      <i class="fas fa-info-circle mr-1"></i> O sistema irá gerar numeração sequencial e vincular à venda, baixando estoque e gerando conta a receber (se ainda não existir).
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
+      <button onclick="confirmarNFe()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Emitir</button>
+    </div>
+  `);
+}
+function confirmarNFe() {
+  const db = loadDB();
+  const tipo = document.getElementById('n_tipo').value;
+  const vendaId = document.getElementById('n_venda').value;
+  const v = db.vendas.find(x=>x.id===vendaId);
+  const key = tipo==='NF-e' ? 'ultimoNFe' : 'ultimoNFCe';
+  const serieKey = tipo==='NF-e' ? 'serieNFe' : 'serieNFCe';
+  db.config.empresa[key] = (db.config.empresa[key]||0)+1;
+  const numero = `${String(db.config.empresa[serieKey]).padStart(3,'0')}${String(db.config.empresa[key]).padStart(9,'0')}`;
+  const nfe = {
+    id: uid(), numero, tipo, data: today(),
+    vendaId: v.id, clienteId: v.clienteId, valor: v.total,
+    status: 'autorizada', chave: 'SIMULADA-' + uid().toUpperCase()
+  };
+  db.nfe.push(nfe);
+  saveDB(db); closeModal(); renderNFe(); toast(`${tipo} ${numero} emitida`);
+}
+function verNFe(id) {
+  const db = loadDB();
+  const n = db.nfe.find(x=>x.id===id);
+  const cli = db.clientes.find(c=>c.id===n.clienteId);
+  openModal(`NF-e ${n.numero}`, `
+    <div class="text-sm space-y-2">
+      <div><strong>Tipo:</strong> ${n.tipo}</div>
+      <div><strong>Emitente:</strong> ${db.config.empresa.razaoSocial} - ${db.config.empresa.cnpj}</div>
+      <div><strong>Destinatário:</strong> ${cli?.nome} - ${cli?.cpfCnpj||''}</div>
+      <div><strong>Data:</strong> ${fmtDate(n.data)}</div>
+      <div><strong>Valor:</strong> ${fmtBRL(n.valor)}</div>
+      <div><strong>Chave:</strong> <span class="font-mono text-xs">${n.chave}</span></div>
+      <div><strong>Status:</strong> <span class="badge bg-emerald-100 text-emerald-700">${n.status}</span></div>
+    </div>
+  `);
+}
+
+/* =========================
+   MARKETPLACES
+   ========================= */
+function renderMarketplaces() {
+  const db = loadDB();
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-sm text-blue-800">
+      <i class="fas fa-plug mr-1"></i> <strong>Como funciona a integração real:</strong> Cada marketplace expõe uma API REST (OAuth2). O ERP realiza: (1) sincronização de produtos via SKU/EAN; (2) push de estoque em tempo real; (3) pull de pedidos via webhook; (4) push de status (envio/rastreio); (5) conciliação financeira.
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      ${db.marketplaces.map(m => `
+        <div class="card p-5">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="font-bold text-gray-800">${m.nome}</div>
+              <div class="text-xs text-gray-500">${m.tipo}</div>
+            </div>
+            <span class="badge ${m.ativo?'bg-emerald-100 text-emerald-700':'bg-gray-100 text-gray-600'}">${m.ativo?'Ativo':'Inativo'}</span>
+          </div>
+          <div class="text-xs text-gray-600 mb-3">Comissão: ${m.comissao}%</div>
+          <div class="mb-3">
+            <label class="text-xs text-gray-500">Token/API Key</label>
+            <input data-mp="${m.id}" value="${m.token||''}" placeholder="Cole aqui seu token" class="w-full px-2 py-1 border rounded text-xs mt-1">
+          </div>
+          <div class="flex gap-2">
+            <button onclick="toggleMp('${m.id}')" class="flex-1 px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-semibold">${m.ativo?'Desativar':'Ativar'}</button>
+            <button onclick="salvarTokenMp('${m.id}')" class="flex-1 px-3 py-1.5 border rounded text-xs font-semibold">Salvar</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function toggleMp(id) {
+  const db = loadDB(); const m = db.marketplaces.find(x=>x.id===id);
+  m.ativo = !m.ativo; saveDB(db); renderMarketplaces();
+}
+function salvarTokenMp(id) {
+  const db = loadDB(); const m = db.marketplaces.find(x=>x.id===id);
+  m.token = document.querySelector(`[data-mp="${id}"]`).value;
+  saveDB(db); toast('Token salvo');
+}
+
+/* =========================
+   PADRONIZAÇÃO
+   ========================= */
+function renderPadronizacao() {
+  document.getElementById('content').innerHTML = `
+    <div class="card p-6 mb-6">
+      <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-sitemap mr-2 text-indigo-600"></i>Padronização para Integração Multi-canal</h3>
+      <p class="text-sm text-gray-600 mb-4">Para que o ERP se integre com Shopee, Mercado Livre, Amazon, Magalu e outros, adotamos um <strong>modelo canônico</strong> interno. Cada marketplace tem seu adapter que converte de/para o formato padrão.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-indigo-50 p-4 rounded-lg">
+          <div class="font-semibold text-indigo-700 mb-2">📦 Produto Canônico</div>
+          <pre class="text-xs bg-white p-3 rounded overflow-auto">{
+  "sku": "string (único)",
+  "ean": "GTIN",
+  "nome": "string",
+  "categoria": "string",
+  "ncm": "8 dígitos",
+  "preco": "decimal",
+  "custo": "decimal",
+  "estoque": "int",
+  "unidade": "UN|KG|LT|MT",
+  "marketplaceSku": {
+    "ml": "string",
+    "shopee": "string",
+    "amazon": "string"
+  }
+}</pre>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <div class="font-semibold text-purple-700 mb-2">🛒 Pedido Canônico</div>
+          <pre class="text-xs bg-white p-3 rounded overflow-auto">{
+  "numero": "string",
+  "data": "ISO 8601",
+  "origem": "ml|shopee|amazon|...",
+  "cliente": { "nome","cpfCnpj","endereco" },
+  "itens": [{ "sku","qtd","preco" }],
+  "total": "decimal",
+  "frete": "decimal",
+  "status": "padronizado",
+  "formaPagto": "string"
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <h3 class="font-bold text-gray-800 mb-3">Fluxo de Integração</h3>
+      <div class="space-y-3 text-sm">
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">1</div><div><strong>Webhook / Polling:</strong> Marketplace notifica novo pedido ou ERP consulta periodicamente.</div></div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">2</div><div><strong>Adapter:</strong> Converte JSON do marketplace para formato canônico do ERP.</div></div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">3</div><div><strong>Match de Produto:</strong> Identifica produto pelo SKU do marketplace (campo marketplaceSku).</div></div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">4</div><div><strong>Persistência:</strong> Grava pedido, baixa estoque, gera conta a receber.</div></div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">5</div><div><strong>Push de Status:</strong> Ao emitir NF-e e gerar rastreio, envia de volta ao marketplace.</div></div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">6</div><div><strong>Conciliação:</strong> Compara pagamentos recebidos do marketplace com pedidos.</div></div>
+      </div>
+    </div>
+  `;
+}
+
+/* =========================
+   IMPORT / EXPORT
+   ========================= */
+function renderDados() {
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="card p-6">
+        <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-file-export text-indigo-600 mr-2"></i>Exportar</h3>
+        <p class="text-sm text-gray-600 mb-4">Baixe o banco completo em JSON ou tabelas específicas em CSV.</p>
+        <div class="space-y-2">
+          <button onclick="exportJSON()" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">📦 Exportar JSON completo</button>
+          <button onclick="exportCSV('produtos')" class="w-full px-4 py-2 border rounded-lg text-sm font-semibold">📊 CSV - Produtos</button>
+          <button onclick="exportCSV('clientes')" class="w-full px-4 py-2 border rounded-lg text-sm font-semibold">📊 CSV - Clientes</button>
+          <button onclick="exportCSV('vendas')" class="w-full px-4 py-2 border rounded-lg text-sm font-semibold">📊 CSV - Vendas</button>
+          <button onclick="exportCSV('contas')" class="w-full px-4 py-2 border rounded-lg text-sm font-semibold">📊 CSV - Contas</button>
+        </div>
+      </div>
+      <div class="card p-6">
+        <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-file-import text-emerald-600 mr-2"></i>Importar</h3>
+        <p class="text-sm text-gray-600 mb-4">Restaure um backup JSON ou importe CSV para uma tabela.</p>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-gray-600">Importar JSON (substitui tudo)</label>
+            <input type="file" accept=".json" onchange="importJSON(event)" class="w-full text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-gray-600">Tabela destino para CSV</label>
+            <select id="csvTarget" class="w-full px-3 py-2 border rounded-lg text-sm">
+              <option value="produtos">Produtos</option>
+              <option value="clientes">Clientes</option>
+              <option value="vendas">Vendas</option>
+              <option value="contas">Contas</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600">Arquivo CSV</label>
+            <input type="file" accept=".csv" onchange="importCSV(event)" class="w-full text-sm">
+          </div>
+          <div class="pt-3 border-t">
+            <button onclick="if(confirm('Apagar TODOS os dados?')){localStorage.removeItem('${DB_KEY}');seedIfEmpty();location.reload();}" class="w-full px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold">🗑️ Resetar Banco</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function download(data, filename, type) {
+  const blob = new Blob([data], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function exportJSON() {
+  const db = loadDB();
+  download(JSON.stringify(db, null, 2), `erp_backup_${today()}.json`, 'application/json');
+  toast('JSON exportado');
+}
+function exportCSV(tabela) {
+  const db = loadDB();
+  const data = db[tabela];
+  if (!data.length) { toast('Tabela vazia','warn'); return; }
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => {
+    const v = r[h];
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v??'').replace(/"/g,'""');
+  }).map(v => `"${v}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  download(csv, `${tabela}_${today()}.csv`, 'text/csv');
+  toast('CSV exportado');
+}
+function importJSON(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.produtos || !data.clientes) throw new Error('Formato inválido');
+      saveDB(data); toast('Importado com sucesso'); setTimeout(()=>location.reload(), 800);
+    } catch(err) { toast('Erro: '+err.message,'error'); }
+  };
+  r.readAsText(f);
+}
+function importCSV(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const target = document.getElementById('csvTarget').value;
+  const r = new FileReader();
+  r.onload = ev => {
+    const lines = ev.target.result.split('\n').filter(l=>l.trim());
+    if (lines.length<2) { toast('CSV vazio','warn'); return; }
+    const headers = lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+    const db = loadDB();
+    for (let i=1; i<lines.length; i++) {
+      const cols = lines[i].match(/("([^"]|"")*"|[^,]+)/g) || [];
+      const obj = { id: uid() };
+      headers.forEach((h,idx) => {
+        let v = (cols[idx]||'').replace(/^"|"$/g,'').replace(/""/g,'"');
+        if (!isNaN(v) && v!=='') v = Number(v);
+        obj[h] = v;
+      });
+      db[target].push(obj);
+    }
+    saveDB(db); toast(`${lines.length-1} registros importados`);
+  };
+  r.readAsText(f);
+}
+
+/* =========================
+   CONFIG
+   ========================= */
+function renderConfig() {
+  const db = loadDB();
+  const e = db.config.empresa;
+  document.getElementById('content').innerHTML = `
+    <div class="card p-6 max-w-3xl">
+      <h3 class="font-bold text-gray-800 mb-4">Dados da Empresa</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2"><label class="text-xs text-gray-600">Razão Social</label><input id="cfg_razao" value="${e.razaoSocial||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div><label class="text-xs text-gray-600">CNPJ</label><input id="cfg_cnpj" value="${e.cnpj||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div><label class="text-xs text-gray-600">Inscrição Estadual</label><input id="cfg_ie" value="${e.ie||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div class="col-span-2"><label class="text-xs text-gray-600">Endereço</label><input id="cfg_end" value="${e.endereco||''}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div><label class="text-xs text-gray-600">Série NF-e</label><input id="cfg_serieNFe" type="number" value="${e.serieNFe||1}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div><label class="text-xs text-gray-600">Série NFC-e</label><input id="cfg_serieNFCe" type="number" value="${e.serieNFCe||1}" class="w-full px-3 py-2 border rounded-lg"></div>
+        <div><label class="text-xs text-gray-600">Ambiente</label><select id="cfg_amb"><option value="homologacao" ${e.ambiente==='homologacao'?'selected':''}>Homologação</option><option value="producao" ${e.ambiente==='producao'?'selected':''}>Produção</option></select></div>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button onclick="salvarConfig()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">Salvar Configurações</button>
+      </div>
+    </div>
+    <div class="card p-6 max-w-3xl mt-6">
+      <h3 class="font-bold text-gray-800 mb-3">Créditos</h3>
+      <div class="text-sm text-gray-700 space-y-1">
+        <div><strong>Desenvolvido por:</strong> Walney Moreira Klein</div>
+        <div><strong>Contato:</strong> <a href="mailto:walneyk@hotmail.com" class="text-indigo-600">walneyk@hotmail.com</a></div>
+        <div><strong>Versão:</strong> MVP 1.0 (JSON/LocalStorage)</div>
+      </div>
+    </div>
+  `;
+}
+function salvarConfig() {
+  const db = loadDB();
+  db.config.empresa.razaoSocial = document.getElementById('cfg_razao').value;
+  db.config.empresa.cnpj = document.getElementById('cfg_cnpj').value;
+  db.config.empresa.ie = document.getElementById('cfg_ie').value;
+  db.config.empresa.endereco = document.getElementById('cfg_end').value;
+  db.config.empresa.serieNFe = parseInt(document.getElementById('cfg_serieNFe').value)||1;
+  db.config.empresa.serieNFCe = parseInt(document.getElementById('cfg_serieNFCe').value)||1;
+  db.config.ambiente = document.getElementById('cfg_amb').value;
+  saveDB(db); toast('Configurações salvas');
+}
+
+/* =========================
+   INIT
+   ========================= */
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+renderDashboard();
+</script>
+</body>
+</html>
